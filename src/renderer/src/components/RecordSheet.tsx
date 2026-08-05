@@ -33,8 +33,8 @@ export function RecordSheet({
         </SheetHeader>
         {record && (
           <>
-            <ScrollArea className="min-h-0 flex-1 px-4">
-              <div className="flex flex-col gap-4 pt-1 pb-4">
+            <ScrollArea className="min-h-0 flex-1">
+              <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
                 {project.fields.map((field) => {
                   const info = fieldTypeInfo(field.type)
                   return (
