@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ChevronDown, Expand, Pencil, Plus, Trash2 } from 'lucide-react'
 import type { Field, Project, RecordRow, View } from '@shared/types'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
+import { Popover, PopoverContent } from '@/components/ui/popover'
 import { ChoiceBadge } from '@/components/ChoiceBadge'
 import { ValueDisplay } from '@/components/ValueDisplay'
 import { FieldDialog } from '@/components/FieldDialog'
@@ -164,15 +164,17 @@ export function TableView({
                     className="h-8 w-44 min-w-44 max-w-64 border-b border-r p-0 text-left font-normal"
                   >
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="flex h-full w-full items-center gap-1.5 px-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
-                          <info.icon className="size-3.5 shrink-0" />
-                          <span className="truncate">{field.name}</span>
-                          <ChevronDown className="ml-auto size-3 shrink-0 opacity-50" />
-                        </button>
-                      </DropdownMenuTrigger>
+                      <DropdownMenuTrigger
+                        render={
+                          <button className="flex h-full w-full items-center gap-1.5 px-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                            <info.icon className="size-3.5 shrink-0" />
+                            <span className="truncate">{field.name}</span>
+                            <ChevronDown className="ml-auto size-3 shrink-0 opacity-50" />
+                          </button>
+                        }
+                      />
                       <DropdownMenuContent align="start">
-                        <DropdownMenuItem onSelect={() => setFieldDialog({ field })}>
+                        <DropdownMenuItem onClick={() => setFieldDialog({ field })}>
                           <Pencil />
                           Edit field
                         </DropdownMenuItem>
@@ -181,7 +183,7 @@ export function TableView({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               variant="destructive"
-                              onSelect={() => setDeleteFieldTarget(field)}
+                              onClick={() => setDeleteFieldTarget(field)}
                             >
                               <Trash2 />
                               Delete field
@@ -255,6 +257,7 @@ export function TableView({
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={() => {
                 if (deleteFieldTarget) update((p) => ops.deleteField(p, deleteFieldTarget.id))
+                setDeleteFieldTarget(null)
               }}
             >
               Delete
@@ -337,6 +340,7 @@ function CellContent({
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const wrap = lineClamp > 1
+  const anchorRef = useRef<HTMLButtonElement>(null)
 
   if (field.type === 'checkbox') {
     return (
@@ -358,21 +362,28 @@ function CellContent({
   ) {
     return (
       <Popover open={editing} onOpenChange={setEditing}>
-        <PopoverAnchor asChild>
-          <button
-            className={cn(
-              'flex h-full w-full overflow-hidden px-2 text-left',
-              wrap ? 'flex-wrap content-start items-start gap-1 py-1.5' : 'items-center'
-            )}
-            onClick={() => setEditing(true)}
-          >
-            <ValueDisplay field={field} value={value} lineClamp={lineClamp} />
-          </button>
-        </PopoverAnchor>
+        <button
+          ref={anchorRef}
+          className={cn(
+            'flex h-full w-full overflow-hidden px-2 text-left',
+            wrap ? 'flex-wrap content-start items-start gap-1 py-1.5' : 'items-center'
+          )}
+          onClick={() => setEditing(true)}
+        >
+          <ValueDisplay field={field} value={value} lineClamp={lineClamp} />
+        </button>
         <PopoverContent
-          className={cn('p-0', field.type === 'image' ? 'w-72 p-3' : 'w-64')}
+          className={cn(
+            'p-0',
+            field.type === 'image'
+              ? 'w-72 p-3'
+              : field.type === 'date'
+                ? 'w-64'
+                : 'w-52'
+          )}
           align="start"
           sideOffset={-4}
+          anchor={anchorRef}
         >
           {field.type === 'date' ? (
             <DateEditor value={value} onChange={onChange} onDone={() => setEditing(false)} />

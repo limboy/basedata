@@ -130,19 +130,24 @@ export function FieldDialog({
                 {choices.map((choice) => (
                   <div key={choice.id} className="flex items-center gap-1.5">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="size-8 shrink-0">
-                          <span
-                            className={cn('size-3 rounded-full', CHOICE_DOT_CLASSES[choice.color])}
-                          />
-                        </Button>
-                      </DropdownMenuTrigger>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button variant="outline" size="icon" className="size-8 shrink-0">
+                            <span
+                              className={cn(
+                                'size-3 rounded-full',
+                                CHOICE_DOT_CLASSES[choice.color]
+                              )}
+                            />
+                          </Button>
+                        }
+                      />
                       <DropdownMenuContent align="start" className="grid grid-cols-5 gap-1 p-1.5">
                         {CHOICE_COLOR_ORDER.map((color) => (
                           <DropdownMenuItem
                             key={color}
                             className="size-7 justify-center p-0"
-                            onSelect={() =>
+                            onClick={() =>
                               setChoices((prev) =>
                                 prev.map((c) => (c.id === choice.id ? { ...c, color } : c))
                               )

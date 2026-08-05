@@ -39,14 +39,16 @@ export function FilterPopover({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <ToolbarButton
-          icon={ListFilter}
-          label="Filter"
-          count={filters.length > 0 ? filters.length : undefined}
-          active={filters.length > 0}
-        />
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <ToolbarButton
+            icon={ListFilter}
+            label="Filter"
+            count={filters.length > 0 ? filters.length : undefined}
+            active={filters.length > 0}
+          />
+        }
+      />
       <PopoverContent className="w-[440px] p-3" align="start">
         {filters.length === 0 ? (
           <p className="mb-2 text-sm text-muted-foreground">No filters applied.</p>
@@ -95,7 +97,7 @@ function FilterRuleRow({
         onValueChange={(fieldId) => {
           const next = fields.find((f) => f.id === fieldId)
           if (!next) return
-          onPatch({ fieldId, operator: operatorsFor(next)[0].value, value: undefined })
+          onPatch({ fieldId: next.id, operator: operatorsFor(next)[0].value, value: undefined })
         }}
       >
         <SelectTrigger size="sm" className="w-32 shrink-0">

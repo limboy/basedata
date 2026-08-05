@@ -3,6 +3,7 @@ import type { Field } from '@shared/types'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -31,33 +32,37 @@ export function GroupSelect({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <ToolbarButton
-          icon={icon}
-          label={active ? `${label}: ${active.name}` : label}
-          active={active !== undefined}
-        />
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <ToolbarButton
+            icon={icon}
+            label={active ? `${label}: ${active.name}` : label}
+            active={active !== undefined}
+          />
+        }
+      />
       <DropdownMenuContent align="start" className="w-52">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">
-          {label} by
-        </DropdownMenuLabel>
-        {fields.map((field) => {
-          const info = fieldTypeInfo(field.type)
-          return (
-            <DropdownMenuItem
-              key={field.id}
-              onSelect={() => onChange(field.id)}
-              data-active={field.id === value || undefined}
-              className="data-[active]:bg-accent"
-            >
-              <info.icon className="size-3.5 text-muted-foreground" />
-              {field.name}
-            </DropdownMenuItem>
-          )
-        })}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs text-muted-foreground">
+            {label} by
+          </DropdownMenuLabel>
+          {fields.map((field) => {
+            const info = fieldTypeInfo(field.type)
+            return (
+              <DropdownMenuItem
+                key={field.id}
+                onClick={() => onChange(field.id)}
+                data-active={field.id === value || undefined}
+                className="data-[active]:bg-accent"
+              >
+                <info.icon className="size-3.5 text-muted-foreground" />
+                {field.name}
+              </DropdownMenuItem>
+            )
+          })}
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-muted-foreground" onSelect={() => onChange(undefined)}>
+        <DropdownMenuItem className="text-muted-foreground" onClick={() => onChange(undefined)}>
           {noneLabel}
         </DropdownMenuItem>
       </DropdownMenuContent>

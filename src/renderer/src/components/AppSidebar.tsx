@@ -150,6 +150,7 @@ function ProjectMenuItem({
   }
 
   const handleDelete = (): void => {
+    setDeleteOpen(false)
     deleteProject.mutate(project.id)
     if (project.id === activeId) navigate('/')
   }
@@ -157,24 +158,29 @@ function ProjectMenuItem({
   return (
     <>
       <SidebarMenuItem>
-        <SidebarMenuButton asChild isActive={project.id === activeId}>
-          <NavLink to={`/project/${project.id}`}>
-            <span className="flex size-4 shrink-0 items-center justify-center rounded-[4px] bg-muted text-[10px] font-semibold uppercase text-muted-foreground">
-              {project.name.charAt(0) || '?'}
-            </span>
-            <span className="truncate">{project.name}</span>
-          </NavLink>
-        </SidebarMenuButton>
+        <SidebarMenuButton
+          isActive={project.id === activeId}
+          render={
+            <NavLink to={`/project/${project.id}`}>
+              <span className="flex size-4 shrink-0 items-center justify-center rounded-[4px] bg-muted text-[10px] font-semibold uppercase text-muted-foreground">
+                {project.name.charAt(0) || '?'}
+              </span>
+              <span className="truncate">{project.name}</span>
+            </NavLink>
+          }
+        />
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuAction showOnHover>
-              <MoreHorizontal />
-              <span className="sr-only">Project actions</span>
-            </SidebarMenuAction>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuAction showOnHover>
+                <MoreHorizontal />
+                <span className="sr-only">Project actions</span>
+              </SidebarMenuAction>
+            }
+          />
           <DropdownMenuContent align="start" side="right">
             <DropdownMenuItem
-              onSelect={() => {
+              onClick={() => {
                 setRenameValue(project.name)
                 setRenameOpen(true)
               }}
@@ -182,7 +188,7 @@ function ProjectMenuItem({
               <Pencil />
               Rename
             </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onSelect={() => setDeleteOpen(true)}>
+            <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
               <Trash2 />
               Delete
             </DropdownMenuItem>

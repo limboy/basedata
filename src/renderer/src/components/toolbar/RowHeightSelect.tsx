@@ -2,6 +2,7 @@ import type { RowHeight } from '@shared/types'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger
@@ -21,24 +22,24 @@ export function RowHeightSelect({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <ToolbarButton icon={active.icon} label="Row height" />
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<ToolbarButton icon={active.icon} label="Row height" />} />
       <DropdownMenuContent align="start" className="w-44">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Row height
-        </DropdownMenuLabel>
-        {ROW_HEIGHT_OPTIONS.map((option) => (
-          <DropdownMenuItem
-            key={option.value}
-            onSelect={() => onChange(option.value)}
-            data-active={option.value === active.value || undefined}
-            className="data-[active]:bg-accent mt-0.5 first:mt-0"
-          >
-            <option.icon className="size-3.5 text-muted-foreground" />
-            {option.label}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs text-muted-foreground">
+            Row height
+          </DropdownMenuLabel>
+          {ROW_HEIGHT_OPTIONS.map((option) => (
+            <DropdownMenuItem
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              data-active={option.value === active.value || undefined}
+              className="data-[active]:bg-accent mt-0.5 first:mt-0"
+            >
+              <option.icon className="size-3.5 text-muted-foreground" />
+              {option.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

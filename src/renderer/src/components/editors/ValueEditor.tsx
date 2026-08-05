@@ -76,12 +76,14 @@ function DateValueEditor({
   const text = displayValue(field, value)
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-start font-normal">
-          <CalendarIcon data-slot="icon" className="text-muted-foreground" />
-          {text || <span className="text-muted-foreground">Pick a date</span>}
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <Button variant="outline" className="w-full justify-start font-normal">
+            <CalendarIcon data-slot="icon" className="text-muted-foreground" />
+            {text || <span className="text-muted-foreground">Pick a date</span>}
+          </Button>
+        }
+      />
       <PopoverContent className="w-auto p-0" align="start">
         <DateEditor value={value} onChange={onChange} onDone={() => setOpen(false)} />
       </PopoverContent>
@@ -105,24 +107,26 @@ function SelectValueEditor({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="min-h-9 w-full justify-between font-normal">
-          <span className="flex min-w-0 flex-wrap items-center gap-1">
-            {multi ? (
-              selected.length > 0 ? (
-                selected.map((choice) => <ChoiceBadge key={choice.id} choice={choice} />)
+      <PopoverTrigger
+        render={
+          <Button variant="outline" className="min-h-9 w-full justify-between font-normal">
+            <span className="flex min-w-0 flex-wrap items-center gap-1">
+              {multi ? (
+                selected.length > 0 ? (
+                  selected.map((choice) => <ChoiceBadge key={choice.id} choice={choice} />)
+                ) : (
+                  <span className="text-muted-foreground">Select options</span>
+                )
+              ) : single ? (
+                <ChoiceBadge choice={single} />
               ) : (
-                <span className="text-muted-foreground">Select options</span>
-              )
-            ) : single ? (
-              <ChoiceBadge choice={single} />
-            ) : (
-              <span className="text-muted-foreground">Select an option</span>
-            )}
-          </span>
-          <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
-        </Button>
-      </PopoverTrigger>
+                <span className="text-muted-foreground">Select an option</span>
+              )}
+            </span>
+            <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+          </Button>
+        }
+      />
       <PopoverContent className="w-64 p-0" align="start">
         <SelectEditor
           field={field}

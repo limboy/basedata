@@ -25,14 +25,16 @@ export function FieldsPopover({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <ToolbarButton
-          icon={hiddenCount > 0 ? EyeOff : Eye}
-          label="Fields"
-          count={hiddenCount > 0 ? hiddenCount : undefined}
-          active={hiddenCount > 0}
-        />
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <ToolbarButton
+            icon={hiddenCount > 0 ? EyeOff : Eye}
+            label="Fields"
+            count={hiddenCount > 0 ? hiddenCount : undefined}
+            active={hiddenCount > 0}
+          />
+        }
+      />
       <PopoverContent className="w-60 p-1.5" align="start">
         <div className="flex flex-col">
           {fields.map((field) => {

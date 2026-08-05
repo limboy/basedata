@@ -148,14 +148,16 @@ function ViewTabs({
             </button>
             {active && (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex h-full items-center rounded-r-md px-1 hover:bg-accent">
-                    <ChevronDown className="size-3 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger
+                  render={
+                    <button className="flex h-full items-center rounded-r-md px-1 hover:bg-accent">
+                      <ChevronDown className="size-3 text-muted-foreground" />
+                    </button>
+                  }
+                />
                 <DropdownMenuContent align="start">
                   <DropdownMenuItem
-                    onSelect={() => {
+                    onClick={() => {
                       setRenameValue(view.name)
                       setRenameView(view)
                     }}
@@ -168,7 +170,7 @@ function ViewTabs({
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         variant="destructive"
-                        onSelect={() => update((p) => ops.deleteView(p, view.id))}
+                        onClick={() => update((p) => ops.deleteView(p, view.id))}
                       >
                         <Trash2 />
                         Delete view
@@ -183,18 +185,20 @@ function ViewTabs({
       })}
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground">
-            <Plus />
-          </Button>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" size="icon" className="size-7 text-muted-foreground">
+              <Plus />
+            </Button>
+          }
+        />
         <DropdownMenuContent align="start">
           {(['table', 'kanban', 'gallery'] as const).map((type) => {
             const Icon = VIEW_ICONS[type]
             return (
               <DropdownMenuItem
                 key={type}
-                onSelect={() =>
+                onClick={() =>
                   update((p) => {
                     const next = ops.addView(p, type)
                     onSelect(next.views[next.views.length - 1].id)

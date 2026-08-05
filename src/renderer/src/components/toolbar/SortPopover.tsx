@@ -25,14 +25,16 @@ export function SortPopover({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <ToolbarButton
-          icon={ArrowUpDown}
-          label="Sort"
-          count={sorts.length > 0 ? sorts.length : undefined}
-          active={sorts.length > 0}
-        />
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <ToolbarButton
+            icon={ArrowUpDown}
+            label="Sort"
+            count={sorts.length > 0 ? sorts.length : undefined}
+            active={sorts.length > 0}
+          />
+        }
+      />
       <PopoverContent className="w-80 p-3" align="start">
         {sorts.length === 0 ? (
           <p className="mb-2 text-sm text-muted-foreground">No sorts applied.</p>
@@ -45,9 +47,10 @@ export function SortPopover({
                 <div key={sort.fieldId} className="flex items-center gap-1.5">
                   <Select
                     value={sort.fieldId}
-                    onValueChange={(fieldId) =>
+                    onValueChange={(fieldId) => {
+                      if (fieldId === null) return
                       onChange(sorts.map((s, i) => (i === index ? { ...s, fieldId } : s)))
-                    }
+                    }}
                   >
                     <SelectTrigger size="sm" className="flex-1">
                       <SelectValue />

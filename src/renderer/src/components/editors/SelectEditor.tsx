@@ -1,4 +1,3 @@
-import { Check } from 'lucide-react'
 import type { Field } from '@shared/types'
 import {
   Command,
@@ -57,10 +56,14 @@ export function SelectEditor({
         <CommandEmpty>No options found.</CommandEmpty>
         <CommandGroup>
           {choices.map((choice) => (
-            <CommandItem key={choice.id} value={choice.name} onSelect={() => toggle(choice.id)}>
+            <CommandItem
+              key={choice.id}
+              value={choice.name}
+              data-checked={selectedIds.includes(choice.id)}
+              onSelect={() => toggle(choice.id)}
+            >
               <span className={cn('size-2.5 shrink-0 rounded-full', CHOICE_DOT_CLASSES[choice.color])} />
               <span className="truncate">{choice.name}</span>
-              {selectedIds.includes(choice.id) && <Check className="ml-auto size-4" />}
             </CommandItem>
           ))}
         </CommandGroup>
