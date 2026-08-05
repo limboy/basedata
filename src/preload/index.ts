@@ -7,7 +7,14 @@ const api: Api = {
   getProject: (id: string) => ipcRenderer.invoke('projects:get', id),
   saveProject: (project: Project) => ipcRenderer.invoke('projects:save', project),
   deleteProject: (id: string) => ipcRenderer.invoke('projects:delete', id),
-  pickImage: () => ipcRenderer.invoke('images:pick')
+  pickImage: () => ipcRenderer.invoke('images:pick'),
+  onProjectsChanged: (callback: () => void) => {
+    const listener = (): void => callback()
+    ipcRenderer.on('projects:changed', listener)
+    return () => {
+      ipcRenderer.removeListener('projects:changed', listener)
+    }
+  }
 }
 
 contextBridge.exposeInMainWorld('api', api)

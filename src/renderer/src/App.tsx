@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppSidebar } from '@/components/AppSidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -16,6 +18,14 @@ function Home(): React.JSX.Element {
 }
 
 export default function App(): React.JSX.Element {
+  const queryClient = useQueryClient()
+
+  // Refetch everything when project files change on disk (e.g. via the CLI).
+  useEffect(
+    () => window.api.onProjectsChanged(() => void queryClient.invalidateQueries()),
+    [queryClient]
+  )
+
   return (
     <SidebarProvider className="h-full min-h-0">
       <AppSidebar />

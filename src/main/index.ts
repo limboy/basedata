@@ -3,6 +3,7 @@ import { join } from 'path'
 import { registerIpc } from './ipc'
 import { registerImageProtocol } from './images'
 import { seedIfEmpty } from './seed'
+import { watchProjects } from './watcher'
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app-image', privileges: { secure: true, supportFetchAPI: true, stream: true } }
@@ -41,6 +42,7 @@ app.whenReady().then(async () => {
   registerImageProtocol()
   registerIpc()
   await seedIfEmpty()
+  watchProjects()
   createWindow()
 
   app.on('activate', () => {

@@ -117,4 +117,6 @@ export interface Api {
   saveProject: (project: Project) => Promise<void>
   deleteProject: (id: string) => Promise<void>
   pickImage: () => Promise<string | null>
+  /** Fires when project files change on disk outside the app; returns unsubscribe. */
+  onProjectsChanged: (callback: () => void) => () => void
 }

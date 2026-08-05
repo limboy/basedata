@@ -8,6 +8,15 @@ export const projectsDir = (): string => join(app.getPath('userData'), 'projects
 
 const SAFE_ID = /^[a-zA-Z0-9-]+$/
 
+// Timestamps of writes made by this process, so the directory watcher can
+// tell the app's own saves apart from external ones (e.g. the agent CLI).
+const selfWrites = new Map<string, number>()
+
+export function wasRecentSelfWrite(filename: string): boolean {
+  const at = selfWrites.get(filename)
+  return at !== undefined && Date.now() - at < 1000
+}
+
 function projectPath(id: string): string {
   if (!SAFE_ID.test(id)) throw new Error(`Invalid project id: ${id}`)
   return join(projectsDir(), `${id}.json`)
@@ -49,8 +58,10 @@ export async function saveProject(project: Project): Promise<void> {
   await ensureDir()
   const target = projectPath(project.id)
   const tmp = `${target}.tmp`
+  selfWrites.set(`${project.id}.json`, Date.now())
   await fs.writeFile(tmp, JSON.stringify(project, null, 2), 'utf-8')
   await fs.rename(tmp, target)
+  selfWrites.set(`${project.id}.json`, Date.now())
 }
 
 export async function createProject(name: string): Promise<Project> {
@@ -60,5 +71,6 @@ export async function createProject(name: string): Promise<Project> {
 }
 
 export async function deleteProject(id: string): Promise<void> {
+  selfWrites.set(`${id}.json`, Date.now())
   await fs.rm(projectPath(id), { force: true })
 }

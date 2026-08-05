@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "A lite Airtable-style desktop app",
   "main": "./out/main/index.js",
+  "bin": {
+    "basedata": "./cli/basedata.mjs"
+  },
   "private": true,
   "author": "limboy",
   "scripts": {
