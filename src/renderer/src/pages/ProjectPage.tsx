@@ -1,0 +1,294 @@
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import {
+  ArrowLeft,
+  ChevronDown,
+  GalleryVertical,
+  Pencil,
+  Plus,
+  SquareKanban,
+  Table2,
+  Trash2,
+  type LucideIcon
+} from 'lucide-react'
+import type { Project, View, ViewType } from '@shared/types'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { RecordSheet } from '@/components/RecordSheet'
+import { TableView } from '@/views/TableView'
+import { KanbanView } from '@/views/KanbanView'
+import { GalleryView } from '@/views/GalleryView'
+import { isMac } from '@/lib/format'
+import * as ops from '@/lib/ops'
+import { useProject, useUpdateProject, type ProjectUpdater } from '@/lib/queries'
+import { cn } from '@/lib/utils'
+
+export const VIEW_ICONS: Record<ViewType, LucideIcon> = {
+  table: Table2,
+  kanban: SquareKanban,
+  gallery: GalleryVertical
+}
+
+export interface ViewProps {
+  project: Project
+  view: View
+  update: ProjectUpdater
+  onOpenRecord: (recordId: string) => void
+}
+
+export default function ProjectPage(): React.JSX.Element {
+  const { id = '' } = useParams()
+  const navigate = useNavigate()
+  const { data: project, isLoading } = useProject(id)
+  const update = useUpdateProject(id)
+
+  const [activeViewId, setActiveViewId] = useState<string>()
+  const [openRecordId, setOpenRecordId] = useState<string | null>(null)
+
+  if (isLoading) return <div className="h-full" />
+  if (!project) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3">
+        <p className="text-sm text-muted-foreground">Project not found.</p>
+        <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+          <ArrowLeft data-slot="icon" />
+          Back to projects
+        </Button>
+      </div>
+    )
+  }
+
+  const activeView = project.views.find((v) => v.id === activeViewId) ?? project.views[0]
+
+  return (
+    <div className="flex h-full flex-col">
+      <header
+        className={cn(
+          'titlebar-drag flex h-12 shrink-0 items-center gap-1 border-b px-3',
+          isMac && 'pl-20'
+        )}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 text-muted-foreground"
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft />
+        </Button>
+        <ProjectNameInput key={project.id} project={project} update={update} />
+        <span className="ml-auto text-xs text-muted-foreground">
+          {project.records.length} record{project.records.length === 1 ? '' : 's'}
+        </span>
+      </header>
+
+      <ViewTabs
+        project={project}
+        activeViewId={activeView?.id}
+        onSelect={setActiveViewId}
+        update={update}
+      />
+
+      <div className="min-h-0 flex-1">
+        {activeView?.type === 'table' && (
+          <TableView project={project} view={activeView} update={update} onOpenRecord={setOpenRecordId} />
+        )}
+        {activeView?.type === 'kanban' && (
+          <KanbanView project={project} view={activeView} update={update} onOpenRecord={setOpenRecordId} />
+        )}
+        {activeView?.type === 'gallery' && (
+          <GalleryView project={project} view={activeView} update={update} onOpenRecord={setOpenRecordId} />
+        )}
+      </div>
+
+      <RecordSheet
+        project={project}
+        recordId={openRecordId}
+        onClose={() => setOpenRecordId(null)}
+        update={update}
+      />
+    </div>
+  )
+}
+
+function ProjectNameInput({
+  project,
+  update
+}: {
+  project: Project
+  update: ProjectUpdater
+}): React.JSX.Element {
+  const [draft, setDraft] = useState(project.name)
+
+  const commit = (): void => {
+    const name = draft.trim()
+    if (name && name !== project.name) update((p) => ({ ...p, name }))
+    else setDraft(project.name)
+  }
+
+  return (
+    <input
+      className="w-56 rounded-md bg-transparent px-2 py-1 text-sm font-semibold tracking-tight outline-none transition-colors hover:bg-accent focus:bg-accent"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+        if (e.key === 'Escape') {
+          setDraft(project.name)
+          ;(e.target as HTMLInputElement).blur()
+        }
+      }}
+    />
+  )
+}
+
+function ViewTabs({
+  project,
+  activeViewId,
+  onSelect,
+  update
+}: {
+  project: Project
+  activeViewId?: string
+  onSelect: (viewId: string) => void
+  update: ProjectUpdater
+}): React.JSX.Element {
+  const [renameView, setRenameView] = useState<View | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+
+  return (
+    <div className="flex h-10 shrink-0 items-center gap-0.5 border-b px-3">
+      {project.views.map((view) => {
+        const Icon = VIEW_ICONS[view.type]
+        const active = view.id === activeViewId
+        return (
+          <div
+            key={view.id}
+            className={cn(
+              'flex h-7 items-center rounded-md text-[13px] transition-colors',
+              active ? 'bg-accent font-medium' : 'text-muted-foreground hover:bg-accent/50'
+            )}
+          >
+            <button
+              className={cn('flex h-full items-center gap-1.5 pl-2', active ? 'pr-0.5' : 'pr-2')}
+              onClick={() => onSelect(view.id)}
+            >
+              <Icon className="size-3.5" />
+              {view.name}
+            </button>
+            {active && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex h-full items-center rounded-r-md px-1 hover:bg-accent">
+                    <ChevronDown className="size-3 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setRenameValue(view.name)
+                      setRenameView(view)
+                    }}
+                  >
+                    <Pencil />
+                    Rename view
+                  </DropdownMenuItem>
+                  {project.views.length > 1 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => update((p) => ops.deleteView(p, view.id))}
+                      >
+                        <Trash2 />
+                        Delete view
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        )
+      })}
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground">
+            <Plus />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          {(['table', 'kanban', 'gallery'] as const).map((type) => {
+            const Icon = VIEW_ICONS[type]
+            return (
+              <DropdownMenuItem
+                key={type}
+                onSelect={() =>
+                  update((p) => {
+                    const next = ops.addView(p, type)
+                    onSelect(next.views[next.views.length - 1].id)
+                    return next
+                  })
+                }
+              >
+                <Icon />
+                {type === 'table' ? 'Table' : type === 'kanban' ? 'Kanban' : 'Gallery'}
+              </DropdownMenuItem>
+            )
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={renameView !== null} onOpenChange={(open) => !open && setRenameView(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Rename view</DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && renameView && renameValue.trim()) {
+                update((p) => ops.renameView(p, renameView.id, renameValue.trim()))
+                setRenameView(null)
+              }
+            }}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameView(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!renameValue.trim()}
+              onClick={() => {
+                if (renameView && renameValue.trim()) {
+                  update((p) => ops.renameView(p, renameView.id, renameValue.trim()))
+                  setRenameView(null)
+                }
+              }}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

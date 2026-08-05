@@ -1,0 +1,117 @@
+export type FieldType =
+  | 'text'
+  | 'number'
+  | 'select'
+  | 'multiSelect'
+  | 'date'
+  | 'checkbox'
+  | 'url'
+  | 'image'
+
+export type ChoiceColor =
+  | 'gray'
+  | 'red'
+  | 'orange'
+  | 'amber'
+  | 'green'
+  | 'teal'
+  | 'blue'
+  | 'indigo'
+  | 'purple'
+  | 'pink'
+
+export interface SelectChoice {
+  id: string
+  name: string
+  color: ChoiceColor
+}
+
+export interface Field {
+  id: string
+  name: string
+  type: FieldType
+  options?: {
+    choices: SelectChoice[]
+  }
+}
+
+export interface RecordRow {
+  id: string
+  createdAt: string
+  values: Record<string, unknown>
+}
+
+export type ViewType = 'table' | 'kanban' | 'gallery'
+
+export type FilterOperator =
+  | 'contains'
+  | 'notContains'
+  | 'is'
+  | 'isNot'
+  | 'isEmpty'
+  | 'isNotEmpty'
+  | 'gt'
+  | 'lt'
+
+export interface FilterRule {
+  id: string
+  fieldId: string
+  operator: FilterOperator
+  value?: unknown
+}
+
+export interface SortRule {
+  fieldId: string
+  direction: 'asc' | 'desc'
+}
+
+export interface TableViewConfig {
+  hiddenFieldIds: string[]
+  filters: FilterRule[]
+  sorts: SortRule[]
+  groupByFieldId?: string
+}
+
+export interface KanbanViewConfig {
+  groupByFieldId?: string
+  hiddenFieldIds: string[]
+}
+
+export interface GalleryViewConfig {
+  coverFieldId?: string
+  hiddenFieldIds: string[]
+}
+
+export type View =
+  | { id: string; name: string; type: 'table'; config: TableViewConfig }
+  | { id: string; name: string; type: 'kanban'; config: KanbanViewConfig }
+  | { id: string; name: string; type: 'gallery'; config: GalleryViewConfig }
+
+export interface Project {
+  id: string
+  name: string
+  icon?: string
+  createdAt: string
+  updatedAt: string
+  fields: Field[]
+  records: RecordRow[]
+  views: View[]
+}
+
+export interface ProjectMeta {
+  id: string
+  name: string
+  icon?: string
+  recordCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Api {
+  listProjects: () => Promise<ProjectMeta[]>
+  createProject: (name: string) => Promise<Project>
+  getProject: (id: string) => Promise<Project>
+  saveProject: (project: Project) => Promise<void>
+  deleteProject: (id: string) => Promise<void>
+  pickImage: () => Promise<string | null>
+}
