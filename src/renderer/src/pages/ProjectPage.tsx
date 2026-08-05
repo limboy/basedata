@@ -28,11 +28,11 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/PageHeader'
 import { RecordSheet } from '@/components/RecordSheet'
 import { TableView } from '@/views/TableView'
 import { KanbanView } from '@/views/KanbanView'
 import { GalleryView } from '@/views/GalleryView'
-import { isMac } from '@/lib/format'
 import * as ops from '@/lib/ops'
 import { useProject, useUpdateProject, type ProjectUpdater } from '@/lib/queries'
 import { cn } from '@/lib/utils'
@@ -76,25 +76,12 @@ export default function ProjectPage(): React.JSX.Element {
 
   return (
     <div className="flex h-full flex-col">
-      <header
-        className={cn(
-          'titlebar-drag flex h-12 shrink-0 items-center gap-1 border-b px-3',
-          isMac && 'pl-20'
-        )}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7 text-muted-foreground"
-          onClick={() => navigate('/')}
-        >
-          <ArrowLeft />
-        </Button>
-        <ProjectNameInput key={project.id} project={project} update={update} />
+      <PageHeader>
+        <span className="px-2 text-sm font-semibold tracking-tight">{project.name}</span>
         <span className="ml-auto text-xs text-muted-foreground">
           {project.records.length} record{project.records.length === 1 ? '' : 's'}
         </span>
-      </header>
+      </PageHeader>
 
       <ViewTabs
         project={project}
@@ -122,38 +109,6 @@ export default function ProjectPage(): React.JSX.Element {
         update={update}
       />
     </div>
-  )
-}
-
-function ProjectNameInput({
-  project,
-  update
-}: {
-  project: Project
-  update: ProjectUpdater
-}): React.JSX.Element {
-  const [draft, setDraft] = useState(project.name)
-
-  const commit = (): void => {
-    const name = draft.trim()
-    if (name && name !== project.name) update((p) => ({ ...p, name }))
-    else setDraft(project.name)
-  }
-
-  return (
-    <input
-      className="w-56 rounded-md bg-transparent px-2 py-1 text-sm font-semibold tracking-tight outline-none transition-colors hover:bg-accent focus:bg-accent"
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-        if (e.key === 'Escape') {
-          setDraft(project.name)
-          ;(e.target as HTMLInputElement).blur()
-        }
-      }}
-    />
   )
 }
 

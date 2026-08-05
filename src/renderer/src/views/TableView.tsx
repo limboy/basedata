@@ -30,10 +30,12 @@ import { FieldsPopover } from '@/components/toolbar/FieldsPopover'
 import { FilterPopover } from '@/components/toolbar/FilterPopover'
 import { SortPopover } from '@/components/toolbar/SortPopover'
 import { GroupSelect } from '@/components/toolbar/GroupSelect'
+import { RowHeightSelect } from '@/components/toolbar/RowHeightSelect'
 import { applyFilters, applySorts, groupRecords, type RecordGroup } from '@/lib/derive'
 import { fieldTypeInfo } from '@/lib/fields'
 import * as ops from '@/lib/ops'
 import type { ProjectUpdater } from '@/lib/queries'
+import { rowHeightInfo, type RowHeightInfo } from '@/lib/rowHeight'
 import { cn } from '@/lib/utils'
 
 type TableViewType = Extract<View, { type: 'table' }>
@@ -74,6 +76,7 @@ export function TableView({
   }
 
   const groupableFields = project.fields.filter((f) => f.type !== 'image')
+  const heightInfo = rowHeightInfo(config.rowHeight)
 
   let rowNumber = 0
 
@@ -83,7 +86,7 @@ export function TableView({
       const number = rowNumber
       return (
         <tr key={record.id} className="group/row border-b transition-colors hover:bg-muted/40">
-          <td className="relative w-11 min-w-11 border-r text-center">
+          <td className={cn(heightInfo.rowClass, 'relative w-11 min-w-11 border-r text-center')}>
             <span className="text-xs tabular-nums text-muted-foreground group-hover/row:invisible">
               {number}
             </span>
@@ -101,6 +104,7 @@ export function TableView({
               field={field}
               record={record}
               update={update}
+              heightInfo={heightInfo}
             />
           ))}
           <td />
@@ -130,6 +134,10 @@ export function TableView({
           fields={groupableFields}
           value={config.groupByFieldId}
           onChange={(groupByFieldId) => patchConfig({ groupByFieldId })}
+        />
+        <RowHeightSelect
+          value={config.rowHeight}
+          onChange={(rowHeight) => patchConfig({ rowHeight })}
         />
         <span className="ml-auto text-xs text-muted-foreground">
           {derived.length === project.records.length
@@ -286,19 +294,26 @@ function GroupSection({
 function TableCell({
   field,
   record,
-  update
+  update,
+  heightInfo
 }: {
   field: Field
   record: RecordRow
   update: ProjectUpdater
+  heightInfo: RowHeightInfo
 }): React.JSX.Element {
   const value = record.values[field.id]
   const setValue = (next: unknown): void =>
     update((p) => ops.setRecordValue(p, record.id, field.id, next))
 
   return (
-    <td className="h-9 w-44 min-w-44 max-w-64 border-b border-r p-0">
-      <CellContent field={field} value={value} onChange={setValue} />
+    <td className={cn(heightInfo.rowClass, 'w-44 min-w-44 max-w-64 border-b border-r p-0')}>
+      <CellContent
+        field={field}
+        value={value}
+        onChange={setValue}
+        lineClamp={heightInfo.lineClamp}
+      />
     </td>
   )
 }
@@ -306,14 +321,17 @@ function TableCell({
 function CellContent({
   field,
   value,
-  onChange
+  onChange,
+  lineClamp
 }: {
   field: Field
   value: unknown
   onChange: (value: unknown) => void
+  lineClamp: number
 }): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  const wrap = lineClamp > 1
 
   if (field.type === 'checkbox') {
     return (
@@ -337,10 +355,13 @@ function CellContent({
       <Popover open={editing} onOpenChange={setEditing}>
         <PopoverAnchor asChild>
           <button
-            className="flex h-full w-full items-center overflow-hidden px-2 text-left"
+            className={cn(
+              'flex h-full w-full overflow-hidden px-2 text-left',
+              wrap ? 'flex-wrap content-start items-start gap-1 py-1.5' : 'items-center'
+            )}
             onClick={() => setEditing(true)}
           >
-            <ValueDisplay field={field} value={value} />
+            <ValueDisplay field={field} value={value} lineClamp={lineClamp} />
           </button>
         </PopoverAnchor>
         <PopoverContent
@@ -394,7 +415,10 @@ function CellContent({
 
   return (
     <button
-      className="flex h-full w-full items-center overflow-hidden px-2 text-left"
+      className={cn(
+        'flex h-full w-full overflow-hidden px-2 text-left',
+        wrap ? 'items-start py-1.5' : 'items-center'
+      )}
       onClick={() => {
         setDraft(
           typeof value === 'string' ? value : typeof value === 'number' ? String(value) : ''
@@ -402,7 +426,7 @@ function CellContent({
         setEditing(true)
       }}
     >
-      <ValueDisplay field={field} value={value} />
+      <ValueDisplay field={field} value={value} lineClamp={lineClamp} />
     </button>
   )
 }

@@ -8,13 +8,21 @@ import { ChoiceBadge } from './ChoiceBadge'
 export function ValueDisplay({
   field,
   value,
-  className
+  className,
+  lineClamp = 1
 }: {
   field: Field
   value: unknown
   className?: string
+  /** Number of text lines to wrap to before truncating; 1 keeps the classic single-line clip. */
+  lineClamp?: number
 }): React.JSX.Element | null {
   if (isEmptyValue(field, value)) return null
+
+  // Tailwind needs literal class names to see at build time, so map rather than interpolate.
+  const clampClass =
+    { 2: 'line-clamp-2', 4: 'line-clamp-4' }[lineClamp] ?? (lineClamp > 1 ? 'line-clamp-6' : null)
+  const wrapClass = clampClass ? cn(clampClass, 'whitespace-normal break-words') : 'truncate'
 
   switch (field.type) {
     case 'select': {
@@ -48,7 +56,8 @@ export function ValueDisplay({
           rel="noreferrer"
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'truncate text-blue-600 underline-offset-2 hover:underline dark:text-blue-400',
+            wrapClass,
+            'text-blue-600 underline-offset-2 hover:underline dark:text-blue-400',
             className
           )}
         >
@@ -64,6 +73,6 @@ export function ValueDisplay({
         />
       )
     default:
-      return <span className={cn('truncate', className)}>{displayValue(field, value)}</span>
+      return <span className={cn(wrapClass, className)}>{displayValue(field, value)}</span>
   }
 }

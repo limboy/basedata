@@ -11,7 +11,11 @@ export function newView(type: View['type'], name?: string): View {
   const base = { id: uuid(), name: name ?? { table: 'Table', kanban: 'Kanban', gallery: 'Gallery' }[type] }
   switch (type) {
     case 'table':
-      return { ...base, type, config: { hiddenFieldIds: [], filters: [], sorts: [] } }
+      return {
+        ...base,
+        type,
+        config: { hiddenFieldIds: [], filters: [], sorts: [], rowHeight: 'short' }
+      }
     case 'kanban':
       return { ...base, type, config: { hiddenFieldIds: [] } }
     case 'gallery':
