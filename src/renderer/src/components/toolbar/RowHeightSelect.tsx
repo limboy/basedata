@@ -33,7 +33,7 @@ export function RowHeightSelect({
             key={option.value}
             onSelect={() => onChange(option.value)}
             data-active={option.value === active.value || undefined}
-            className="data-[active]:bg-accent"
+            className="data-[active]:bg-accent mt-0.5 first:mt-0"
           >
             <option.icon className="size-3.5 text-muted-foreground" />
             {option.label}
