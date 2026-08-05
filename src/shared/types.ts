@@ -65,11 +65,14 @@ export interface SortRule {
   direction: 'asc' | 'desc'
 }
 
+export type RowHeight = 'short' | 'medium' | 'tall'
+
 export interface TableViewConfig {
   hiddenFieldIds: string[]
   filters: FilterRule[]
   sorts: SortRule[]
   groupByFieldId?: string
+  rowHeight?: RowHeight
 }
 
 export interface KanbanViewConfig {

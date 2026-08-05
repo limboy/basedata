@@ -1,10 +1,9 @@
 import { forwardRef } from 'react'
-import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface ToolbarButtonProps extends React.ComponentProps<typeof Button> {
-  icon: LucideIcon
+  icon: React.ComponentType<{ className?: string }>
   label: string
   count?: number
   active?: boolean
