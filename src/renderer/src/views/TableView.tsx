@@ -86,7 +86,12 @@ export function TableView({
       const number = rowNumber
       return (
         <tr key={record.id} className="group/row border-b transition-colors hover:bg-muted/40">
-          <td className={cn(heightInfo.rowClass, 'relative w-11 min-w-11 border-r text-center')}>
+          <td
+            className={cn(
+              heightInfo.rowClass,
+              'relative w-11 min-w-11 border-b border-r text-center'
+            )}
+          >
             <span className="text-xs tabular-nums text-muted-foreground group-hover/row:invisible">
               {number}
             </span>
