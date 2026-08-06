@@ -37,11 +37,6 @@ export function SelectEditor({
       ? [value]
       : []
 
-  // cmdk keyboard-focuses the first item in the list by default, which reads
-  // as "selected" even when it isn't. Point the initial focus at the current
-  // value instead, so the highlight and the checkmark always agree.
-  const firstSelectedChoice = choices.find((c) => selectedIds.includes(c.id))
-
   const toggle = (choiceId: string): void => {
     if (multi) {
       const next = selectedIds.includes(choiceId)
@@ -55,7 +50,14 @@ export function SelectEditor({
   }
 
   return (
-    <Command defaultValue={firstSelectedChoice?.name}>
+    // cmdk always keeps some item "selected" internally, and falls back to
+    // auto-highlighting the first item unless the initial value already
+    // matches something — which made an arbitrary (often unselected) option
+    // look highlighted on open. Point it at a value no item can match, so
+    // nothing is highlighted until the user actually hovers or presses an
+    // arrow key, matching the other option menus in the app (where the
+    // checkmark alone marks the current value).
+    <Command defaultValue="__no_initial_highlight__">
       <CommandInput placeholder="Search options…" />
       <CommandList>
         <CommandEmpty>No options found.</CommandEmpty>
