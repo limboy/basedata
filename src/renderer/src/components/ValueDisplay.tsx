@@ -64,14 +64,26 @@ export function ValueDisplay({
           {String(value)}
         </a>
       )
-    case 'image':
+    case 'image': {
+      // `max-h-full` can't resolve inside a table cell (no definite containing-block
+      // height in standard table layout), so the thumbnail would render at its
+      // intrinsic size and blow up the row. Cap it to a fixed height per row-height
+      // tier instead, sized to fit within that row after its padding/border.
+      const imageMaxHeightClass = { 2: 'max-h-12', 4: 'max-h-24' }[lineClamp] ?? 'max-h-32'
       return (
         <img
           src={String(value)}
           alt=""
-          className={cn('h-6 w-10 rounded-sm border object-cover', className)}
+          className={cn(
+            'rounded-sm border',
+            lineClamp > 1
+              ? cn(imageMaxHeightClass, 'max-w-full object-contain')
+              : 'h-6 w-10 object-cover',
+            className
+          )}
         />
       )
+    }
     default:
       return <span className={cn(wrapClass, className)}>{displayValue(field, value)}</span>
   }
