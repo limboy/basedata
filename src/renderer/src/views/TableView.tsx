@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ChevronDown, Expand, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Expand, Plus } from 'lucide-react'
 import type { Field, Project, RecordRow, View } from '@shared/types'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -180,9 +180,8 @@ export function TableView({
                           </button>
                         }
                       />
-                      <DropdownMenuContent align="start">
+                      <DropdownMenuContent align="start" className="w-auto min-w-32">
                         <DropdownMenuItem onClick={() => setFieldDialog({ field })}>
-                          <Pencil />
                           Edit field
                         </DropdownMenuItem>
                         {project.fields.length > 1 && (
@@ -192,7 +191,6 @@ export function TableView({
                               variant="destructive"
                               onClick={() => setDeleteFieldTarget(field)}
                             >
-                              <Trash2 />
                               Delete field
                             </DropdownMenuItem>
                           </>
