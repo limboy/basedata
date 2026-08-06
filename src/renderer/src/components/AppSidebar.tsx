@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useMatch, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { MoreHorizontal, Plus, Settings } from 'lucide-react'
+import { Plus, Settings } from 'lucide-react'
 import type { ProjectMeta } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,13 +23,6 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu'
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -37,7 +30,6 @@ import {
   SidebarGroupAction,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail
@@ -175,9 +167,24 @@ function ProjectMenuItem({
     }
   }
 
+  const handleContextMenu = async (e: React.MouseEvent): Promise<void> => {
+    e.preventDefault()
+    const action = await window.api.showContextMenu([
+      { id: 'rename', label: 'Rename' },
+      { id: 'sep', label: '', type: 'separator' },
+      { id: 'delete', label: 'Delete', danger: true }
+    ])
+    if (action === 'rename') {
+      setRenameValue(project.name)
+      setRenameOpen(true)
+    } else if (action === 'delete') {
+      setDeleteOpen(true)
+    }
+  }
+
   return (
     <>
-      <SidebarMenuItem>
+      <SidebarMenuItem onContextMenu={handleContextMenu}>
         <SidebarMenuButton
           className="cursor-default"
           isActive={project.id === activeId}
@@ -187,30 +194,6 @@ function ProjectMenuItem({
             </NavLink>
           }
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <SidebarMenuAction showOnHover>
-                <MoreHorizontal />
-                <span className="sr-only">Project actions</span>
-              </SidebarMenuAction>
-            }
-          />
-          <DropdownMenuContent align="start" side="right">
-            <DropdownMenuItem
-              onClick={() => {
-                setRenameValue(project.name)
-                setRenameOpen(true)
-              }}
-            >
-              Rename
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </SidebarMenuItem>
 
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>

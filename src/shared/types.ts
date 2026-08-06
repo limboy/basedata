@@ -113,7 +113,16 @@ export interface ProjectMeta {
   updatedAt: string
 }
 
+export interface ContextMenuItem {
+  id: string
+  label: string
+  type?: 'separator'
+  danger?: boolean
+}
+
 export interface Api {
+  /** Shows a native OS context menu at the cursor; resolves with the clicked item's id, or null if dismissed. */
+  showContextMenu: (items: ContextMenuItem[]) => Promise<string | null>
   listProjects: () => Promise<ProjectMeta[]>
   createProject: (name: string) => Promise<Project>
   getProject: (id: string) => Promise<Project>

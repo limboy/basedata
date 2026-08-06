@@ -1,5 +1,5 @@
-import { BrowserWindow, dialog, ipcMain } from 'electron'
-import type { Project } from '@shared/types'
+import { BrowserWindow, dialog, ipcMain, Menu } from 'electron'
+import type { ContextMenuItem, Project } from '@shared/types'
 import { createProject, deleteProject, ensureProjectsDir, getProject, listProjects, saveProject } from './storage'
 import { importImageData, pickImage } from './images'
 import { importAudioData, pickAudio } from './audio'
@@ -19,6 +19,26 @@ export function registerIpc(): void {
   ipcMain.handle('audio:importData', (_e, name: string, data: ArrayBuffer) => importAudioData(name, data))
   ipcMain.handle('updater:status', () => getReadyUpdateVersion())
   ipcMain.handle('updater:install', () => installReadyUpdate())
+
+  ipcMain.handle('menu:popup', (e, items: ContextMenuItem[]) => {
+    const win = BrowserWindow.fromWebContents(e.sender) ?? undefined
+    return new Promise<string | null>((resolve) => {
+      let resolved = false
+      const settle = (id: string | null): void => {
+        if (resolved) return
+        resolved = true
+        resolve(id)
+      }
+      const menu = Menu.buildFromTemplate(
+        items.map((item) =>
+          item.type === 'separator'
+            ? { type: 'separator' as const }
+            : { label: item.label, click: () => settle(item.id) }
+        )
+      )
+      menu.popup({ window: win, callback: () => settle(null) })
+    })
+  })
 
   ipcMain.handle('settings:getDataDir', () => ({
     current: getDataDir(),

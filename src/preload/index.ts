@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { Api, Project } from '@shared/types'
+import type { Api, ContextMenuItem, Project } from '@shared/types'
 
 const api: Api = {
+  showContextMenu: (items: ContextMenuItem[]) => ipcRenderer.invoke('menu:popup', items),
   listProjects: () => ipcRenderer.invoke('projects:list'),
   createProject: (name: string) => ipcRenderer.invoke('projects:create', name),
   getProject: (id: string) => ipcRenderer.invoke('projects:get', id),
