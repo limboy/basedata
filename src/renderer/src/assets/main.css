@@ -117,6 +117,7 @@
   body,
   #root {
     height: 100%;
+    overflow-x: hidden;
   }
   ::selection {
     @apply bg-primary/10;
