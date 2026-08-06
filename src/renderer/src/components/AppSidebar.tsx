@@ -164,7 +164,12 @@ function ProjectMenuItem({
   const handleDelete = (): void => {
     setDeleteOpen(false)
     deleteProject.mutate(project.id)
-    if (project.id === activeId) navigate('/')
+    if (project.id === activeId) {
+      const remaining = (queryClient.getQueryData<ProjectMeta[]>(['projects']) ?? []).filter(
+        (p) => p.id !== project.id
+      )
+      navigate(remaining.length > 0 ? `/project/${remaining[0].id}` : '/')
+    }
   }
 
   return (

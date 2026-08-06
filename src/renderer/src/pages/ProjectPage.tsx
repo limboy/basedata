@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  ArrowLeft,
   ChevronDown,
   GalleryVertical,
   Plus,
@@ -42,7 +41,7 @@ import { TableView } from '@/views/TableView'
 import { KanbanView } from '@/views/KanbanView'
 import { GalleryView } from '@/views/GalleryView'
 import * as ops from '@/lib/ops'
-import { useProject, useUpdateProject, type ProjectUpdater } from '@/lib/queries'
+import { useProject, useProjects, useUpdateProject, type ProjectUpdater } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 
 export const VIEW_ICONS: Record<ViewType, LucideIcon> = {
@@ -62,20 +61,26 @@ export default function ProjectPage(): React.JSX.Element {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const { data: project, isLoading } = useProject(id)
+  const { data: projects, isLoading: isLoadingProjects } = useProjects()
   const update = useUpdateProject(id)
 
   const [activeViewId, setActiveViewId] = useState<string>()
   const [openRecordId, setOpenRecordId] = useState<string | null>(null)
+
+  // A project can disappear out from under this route (deleted elsewhere,
+  // stale link, etc). Once we're sure it's gone, fall back to another
+  // project instead of leaving the user stranded on a dead route.
+  useEffect(() => {
+    if (isLoading || isLoadingProjects || project || !projects) return
+    const next = projects.find((p) => p.id !== id) ?? projects[0]
+    navigate(next ? `/project/${next.id}` : '/', { replace: true })
+  }, [isLoading, isLoadingProjects, project, projects, id, navigate])
 
   if (isLoading) return <div className="h-full" />
   if (!project) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <p className="text-sm text-muted-foreground">Project not found.</p>
-        <Button variant="outline" size="sm" onClick={() => navigate('/')}>
-          <ArrowLeft data-slot="icon" />
-          Back to projects
-        </Button>
       </div>
     )
   }

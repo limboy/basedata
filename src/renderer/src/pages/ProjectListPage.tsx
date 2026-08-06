@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Database, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import type { ProjectMeta } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -39,40 +39,22 @@ export default function ProjectListPage(): React.JSX.Element {
       <PageHeader />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-5xl px-8 py-10">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Each project is its own table with views.
-              </p>
-            </div>
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus data-slot="icon" />
-              New project
-            </Button>
-          </div>
-
-          {isLoading ? null : projects && projects.length > 0 ? (
+        {isLoading ? null : projects && projects.length > 0 ? (
+          <div className="mx-auto w-full max-w-5xl px-8 py-10">
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
               {projects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-24 text-center">
-              <Database className="mb-3 size-8 text-muted-foreground/50" />
-              <p className="text-sm font-medium">No projects yet</p>
-              <p className="mb-4 mt-1 text-sm text-muted-foreground">
-                Create your first project to get started.
-              </p>
-              <Button size="sm" onClick={() => setCreateOpen(true)}>
-                <Plus data-slot="icon" />
-                New project
-              </Button>
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus data-slot="icon" />
+              New project
+            </Button>
+          </div>
+        )}
       </main>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
