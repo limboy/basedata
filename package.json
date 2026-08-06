@@ -8,6 +8,10 @@
   },
   "private": true,
   "author": "limboy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/limboy/basedata.git"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
@@ -15,7 +19,7 @@
     "typecheck": "tsc --noEmit",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:mac": "npm run build && electron-builder --mac --arm64",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux"
   },
