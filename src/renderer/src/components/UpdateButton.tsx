@@ -43,7 +43,7 @@ export function UpdateButton(): React.JSX.Element | null {
       onClick={handleInstall}
       disabled={installing}
       title={`Update to v${version} is ready — click to install and restart`}
-      className="absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-blue-400 px-3 py-[5px] text-xs font-medium text-white transition-colors hover:bg-blue-500 disabled:pointer-events-none disabled:opacity-60"
+      className="no-drag absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-blue-400 px-3 py-[5px] text-xs font-medium text-white transition-colors hover:bg-blue-500 disabled:pointer-events-none disabled:opacity-60"
     >
       {installing ? 'Installing…' : 'Update'}
     </button>
