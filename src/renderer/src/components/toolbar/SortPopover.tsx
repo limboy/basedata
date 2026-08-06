@@ -43,9 +43,23 @@ export function SortPopover({
             {sorts.map((sort, index) => {
               const field = fields.find((f) => f.id === sort.fieldId)
               if (!field) return null
+              const sortableFields = [field, ...unsortedFields]
+              const fieldItems = Object.fromEntries(
+                sortableFields.map((f) => {
+                  const info = fieldTypeInfo(f.type)
+                  return [
+                    f.id,
+                    <span key={f.id} className="flex items-center gap-1.5">
+                      <info.icon className="size-3.5 text-muted-foreground" />
+                      {f.name}
+                    </span>
+                  ]
+                })
+              )
               return (
                 <div key={sort.fieldId} className="flex items-center gap-1.5">
                   <Select
+                    items={fieldItems}
                     value={sort.fieldId}
                     onValueChange={(fieldId) => {
                       if (fieldId === null) return
@@ -56,7 +70,7 @@ export function SortPopover({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {[field, ...unsortedFields].map((f) => {
+                      {sortableFields.map((f) => {
                         const info = fieldTypeInfo(f.type)
                         return (
                           <SelectItem key={f.id} value={f.id}>
@@ -68,6 +82,7 @@ export function SortPopover({
                     </SelectContent>
                   </Select>
                   <Select
+                    items={{ asc: 'A → Z', desc: 'Z → A' }}
                     value={sort.direction}
                     onValueChange={(direction) =>
                       onChange(

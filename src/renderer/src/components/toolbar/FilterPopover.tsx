@@ -90,9 +90,24 @@ function FilterRuleRow({
   const operators = operatorsFor(field)
   const operator = operators.find((op) => op.value === rule.operator) ?? operators[0]
 
+  const fieldItems = Object.fromEntries(
+    fields.map((f) => {
+      const info = fieldTypeInfo(f.type)
+      return [
+        f.id,
+        <span key={f.id} className="flex items-center gap-1.5">
+          <info.icon className="size-3.5 text-muted-foreground" />
+          {f.name}
+        </span>
+      ]
+    })
+  )
+  const operatorItems = Object.fromEntries(operators.map((op) => [op.value, op.label]))
+
   return (
     <div className="flex items-center gap-1.5">
       <Select
+        items={fieldItems}
         value={field.id}
         onValueChange={(fieldId) => {
           const next = fields.find((f) => f.id === fieldId)
@@ -117,6 +132,7 @@ function FilterRuleRow({
       </Select>
 
       <Select
+        items={operatorItems}
         value={operator.value}
         onValueChange={(op) => onPatch({ operator: op as FilterRule['operator'] })}
       >
@@ -163,8 +179,10 @@ function FilterValueInput({
     case 'select':
     case 'multiSelect': {
       const choices = field.options?.choices ?? []
+      const choiceItems = Object.fromEntries(choices.map((c) => [c.id, c.name]))
       return (
         <Select
+          items={choiceItems}
           value={typeof value === 'string' ? value : ''}
           onValueChange={(v) => onChange(v)}
         >

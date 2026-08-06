@@ -108,7 +108,19 @@ export function FieldDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label>Type</Label>
-            <Select value={type} onValueChange={(v) => setType(v as FieldType)}>
+            <Select
+              items={Object.fromEntries(
+                FIELD_TYPES.map((info) => [
+                  info.type,
+                  <span key={info.type} className="flex items-center gap-1.5">
+                    <info.icon className="size-4 text-muted-foreground" />
+                    {info.label}
+                  </span>
+                ])
+              )}
+              value={type}
+              onValueChange={(v) => setType(v as FieldType)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
