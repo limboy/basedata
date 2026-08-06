@@ -8,6 +8,7 @@ const api: Api = {
   saveProject: (project: Project) => ipcRenderer.invoke('projects:save', project),
   deleteProject: (id: string) => ipcRenderer.invoke('projects:delete', id),
   pickImage: () => ipcRenderer.invoke('images:pick'),
+  pickAudio: () => ipcRenderer.invoke('audio:pick'),
   onProjectsChanged: (callback: () => void) => {
     const listener = (): void => callback()
     ipcRenderer.on('projects:changed', listener)

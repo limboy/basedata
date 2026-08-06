@@ -7,6 +7,7 @@ export type FieldType =
   | 'checkbox'
   | 'url'
   | 'image'
+  | 'audio'
 
 export type ChoiceColor =
   | 'gray'
@@ -119,6 +120,7 @@ export interface Api {
   saveProject: (project: Project) => Promise<void>
   deleteProject: (id: string) => Promise<void>
   pickImage: () => Promise<string | null>
+  pickAudio: () => Promise<string | null>
   /** Fires when project files change on disk outside the app; returns unsubscribe. */
   onProjectsChanged: (callback: () => void) => () => void
   /** Version of an already-downloaded update ready to install, if any. */

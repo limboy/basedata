@@ -1,5 +1,6 @@
 import {
   AlignLeft,
+  AudioLines,
   CalendarDays,
   CircleChevronDown,
   Hash,
@@ -31,7 +32,8 @@ export const FIELD_TYPES: FieldTypeInfo[] = [
   { type: 'date', label: 'Date', icon: CalendarDays },
   { type: 'checkbox', label: 'Checkbox', icon: SquareCheck },
   { type: 'url', label: 'URL', icon: Link2 },
-  { type: 'image', label: 'Image', icon: ImageIcon }
+  { type: 'image', label: 'Image', icon: ImageIcon },
+  { type: 'audio', label: 'Audio', icon: AudioLines }
 ]
 
 export function fieldTypeInfo(type: FieldType): FieldTypeInfo {
@@ -190,6 +192,7 @@ export function operatorsFor(field: Field): OperatorInfo[] {
         { value: 'isNot', label: 'is unchecked', needsValue: false }
       ]
     case 'image':
+    case 'audio':
       return isEmptyOps
   }
 }

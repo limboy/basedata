@@ -23,6 +23,7 @@ import { Popover, PopoverContent } from '@/components/ui/popover'
 import { ChoiceBadge } from '@/components/ChoiceBadge'
 import { ValueDisplay } from '@/components/ValueDisplay'
 import { FieldDialog } from '@/components/FieldDialog'
+import { AudioEditor } from '@/components/editors/AudioEditor'
 import { DateEditor } from '@/components/editors/DateEditor'
 import { ImageEditor } from '@/components/editors/ImageEditor'
 import { SelectEditor } from '@/components/editors/SelectEditor'
@@ -122,7 +123,7 @@ export function TableView({
     window.addEventListener('mouseup', onUp)
   }
 
-  const groupableFields = project.fields.filter((f) => f.type !== 'image')
+  const groupableFields = project.fields.filter((f) => f.type !== 'image' && f.type !== 'audio')
   const heightInfo = rowHeightInfo(config.rowHeight)
 
   let rowNumber = 0
@@ -454,7 +455,8 @@ function CellContent({
     field.type === 'select' ||
     field.type === 'multiSelect' ||
     field.type === 'date' ||
-    field.type === 'image'
+    field.type === 'image' ||
+    field.type === 'audio'
   ) {
     return (
       <Popover open={editing} onOpenChange={setEditing}>
@@ -473,7 +475,7 @@ function CellContent({
         <PopoverContent
           className={cn(
             'p-0',
-            field.type === 'image'
+            field.type === 'image' || field.type === 'audio'
               ? 'w-72 p-3'
               : field.type === 'date'
                 ? 'w-64'
@@ -487,6 +489,8 @@ function CellContent({
             <DateEditor value={value} onChange={onChange} onDone={() => setEditing(false)} />
           ) : field.type === 'image' ? (
             <ImageEditor value={value} onChange={onChange} />
+          ) : field.type === 'audio' ? (
+            <AudioEditor value={value} onChange={onChange} />
           ) : (
             <SelectEditor
               field={field}

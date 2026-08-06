@@ -2,12 +2,14 @@ import { app, BrowserWindow, protocol, shell } from 'electron'
 import { join } from 'path'
 import { registerIpc } from './ipc'
 import { registerImageProtocol } from './images'
+import { registerAudioProtocol } from './audio'
 import { seedIfEmpty } from './seed'
 import { watchProjects } from './watcher'
 import { initAutoUpdater } from './updater'
 
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'app-image', privileges: { secure: true, supportFetchAPI: true, stream: true } }
+  { scheme: 'app-image', privileges: { secure: true, supportFetchAPI: true, stream: true } },
+  { scheme: 'app-audio', privileges: { secure: true, supportFetchAPI: true, stream: true } }
 ])
 
 const iconPath = join(__dirname, '../../build/icon.png')
@@ -44,6 +46,7 @@ function createWindow(): void {
 
 app.whenReady().then(async () => {
   registerImageProtocol()
+  registerAudioProtocol()
   registerIpc()
   await seedIfEmpty()
   watchProjects()

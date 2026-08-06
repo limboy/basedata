@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { choiceById, choicesByIds, displayValue } from '@/lib/fields'
 import { ChoiceBadge } from '@/components/ChoiceBadge'
+import { AudioEditor } from './AudioEditor'
 import { DateEditor } from './DateEditor'
 import { ImageEditor } from './ImageEditor'
 import { SelectEditor } from './SelectEditor'
@@ -63,6 +64,8 @@ export function ValueEditor({
       return <SelectValueEditor field={field} value={value} onChange={onChange} />
     case 'image':
       return <ImageEditor value={value} onChange={onChange} />
+    case 'audio':
+      return <AudioEditor value={value} onChange={onChange} />
   }
 }
 

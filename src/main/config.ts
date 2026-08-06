@@ -3,7 +3,7 @@ import { existsSync, promises as fs, readFileSync, writeFileSync } from 'fs'
 import { join, relative, isAbsolute } from 'path'
 
 interface AppConfig {
-  /** Custom root directory for projects/images, if the user changed it. */
+  /** Custom root directory for projects/images/audio, if the user changed it. */
   dataDir?: string
 }
 
@@ -28,7 +28,7 @@ export const defaultDataDir = (): string => app.getPath('userData')
 
 let currentDataDir: string | null = null
 
-/** Root directory where the `projects/` and `images/` folders live. */
+/** Root directory where the `projects/`, `images/` and `audio/` folders live. */
 export function getDataDir(): string {
   if (currentDataDir) return currentDataDir
   const configured = readConfig().dataDir
@@ -40,7 +40,7 @@ export function getDataDir(): string {
 
 /**
  * Points the app at a new data folder. By default it also moves the
- * existing projects/ and images/ folders there — copying first and only
+ * existing projects/, images/ and audio/ folders there — copying first and only
  * removing the old copies once that succeeds, so a failed copy leaves the
  * original data untouched. Pass `move: false` to just switch to the new
  * (presumably empty, or already-populated) folder and leave the old data
@@ -50,7 +50,7 @@ export async function setDataDir(newDir: string, { move = true }: { move?: boole
   const from = getDataDir()
   if (newDir === from) return
 
-  const subdirs = ['projects', 'images']
+  const subdirs = ['projects', 'images', 'audio']
 
   if (move) {
     // Refuse to move data into a folder nested inside the current one — that

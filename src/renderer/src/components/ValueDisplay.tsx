@@ -84,6 +84,15 @@ export function ValueDisplay({
         />
       )
     }
+    case 'audio':
+      return (
+        <audio
+          src={String(value)}
+          controls
+          onClick={(e) => e.stopPropagation()}
+          className={cn('h-8 max-w-full', className)}
+        />
+      )
     default:
       return <span className={cn(wrapClass, className)}>{displayValue(field, value)}</span>
   }

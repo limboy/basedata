@@ -220,6 +220,7 @@ function FilterValueInput({
       )
     case 'checkbox':
     case 'image':
+    case 'audio':
       return null
     default:
       return (
