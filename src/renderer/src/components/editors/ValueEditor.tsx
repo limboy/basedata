@@ -4,6 +4,7 @@ import type { Field } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { choiceById, choicesByIds, displayValue } from '@/lib/fields'
 import { ChoiceBadge } from '@/components/ChoiceBadge'
@@ -24,7 +25,9 @@ export function ValueEditor({
   switch (field.type) {
     case 'text':
       return (
-        <Input
+        <Textarea
+          rows={1}
+          className="min-h-9 resize-none py-2"
           value={typeof value === 'string' ? value : ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Empty"

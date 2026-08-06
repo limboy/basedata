@@ -22,7 +22,8 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /*--ring: oklch(0.708 0 0);*/
+  --ring: oklch(0.5573 0.1921 257.95);
   --radius: 0.625rem;
   --sidebar: hsl(0 0% 98%);
   --sidebar-foreground: hsl(240 5.3% 26.1%);

@@ -22,7 +22,7 @@ export function ValueDisplay({
   // Tailwind needs literal class names to see at build time, so map rather than interpolate.
   const clampClass =
     { 2: 'line-clamp-2', 4: 'line-clamp-4' }[lineClamp] ?? (lineClamp > 1 ? 'line-clamp-6' : null)
-  const wrapClass = clampClass ? cn(clampClass, 'whitespace-normal break-words') : 'truncate'
+  const wrapClass = clampClass ? cn(clampClass, 'whitespace-pre-wrap break-words') : 'truncate'
 
   switch (field.type) {
     case 'select': {

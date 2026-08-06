@@ -54,6 +54,9 @@ export function TableView({
   const config = view.config
   const [fieldDialog, setFieldDialog] = useState<{ field?: Field } | null>(null)
   const [deleteFieldTarget, setDeleteFieldTarget] = useState<Field | null>(null)
+  const [selectedCell, setSelectedCell] = useState<{ recordId: string; fieldId: string } | null>(
+    null
+  )
 
   const visibleFields = project.fields.filter((f) => !config.hiddenFieldIds.includes(f.id))
   const groupField = project.fields.find((f) => f.id === config.groupByFieldId)
@@ -110,6 +113,10 @@ export function TableView({
               record={record}
               update={update}
               heightInfo={heightInfo}
+              selected={
+                selectedCell?.recordId === record.id && selectedCell?.fieldId === field.id
+              }
+              onSelect={() => setSelectedCell({ recordId: record.id, fieldId: field.id })}
             />
           ))}
           <td />
@@ -303,12 +310,16 @@ function TableCell({
   field,
   record,
   update,
-  heightInfo
+  heightInfo,
+  selected,
+  onSelect
 }: {
   field: Field
   record: RecordRow
   update: ProjectUpdater
   heightInfo: RowHeightInfo
+  selected: boolean
+  onSelect: () => void
 }): React.JSX.Element {
   const value = record.values[field.id]
   const setValue = (next: unknown): void =>
@@ -321,6 +332,8 @@ function TableCell({
         value={value}
         onChange={setValue}
         lineClamp={heightInfo.lineClamp}
+        selected={selected}
+        onSelect={onSelect}
       />
     </td>
   )
@@ -330,12 +343,16 @@ function CellContent({
   field,
   value,
   onChange,
-  lineClamp
+  lineClamp,
+  selected,
+  onSelect
 }: {
   field: Field
   value: unknown
   onChange: (value: unknown) => void
   lineClamp: number
+  selected: boolean
+  onSelect: () => void
 }): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -366,9 +383,11 @@ function CellContent({
           ref={anchorRef}
           className={cn(
             'flex h-full w-full overflow-hidden px-2 text-left',
-            wrap ? 'flex-wrap content-start items-start gap-1 py-1.5' : 'items-center'
+            wrap ? 'flex-wrap content-start items-start gap-1 py-1.5' : 'items-center',
+            selected && !editing && 'ring-2 ring-inset ring-ring'
           )}
-          onClick={() => setEditing(true)}
+          onClick={onSelect}
+          onDoubleClick={() => setEditing(true)}
         >
           <ValueDisplay field={field} value={value} lineClamp={lineClamp} />
         </button>
@@ -413,6 +432,24 @@ function CellContent({
         onChange(draft)
       }
     }
+    if (field.type === 'text' && wrap) {
+      return (
+        <textarea
+          autoFocus
+          className="h-full w-full resize-none bg-background px-2 py-1.5 outline-none ring-1 ring-inset ring-ring"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              commit()
+            }
+            if (e.key === 'Escape') setEditing(false)
+          }}
+        />
+      )
+    }
     return (
       <input
         autoFocus
@@ -433,9 +470,11 @@ function CellContent({
     <button
       className={cn(
         'flex h-full w-full overflow-hidden px-2 text-left',
-        wrap ? 'items-start py-1.5' : 'items-center'
+        wrap ? 'items-start py-1.5' : 'items-center',
+        selected && 'ring-2 ring-inset ring-ring'
       )}
-      onClick={() => {
+      onClick={onSelect}
+      onDoubleClick={() => {
         setDraft(
           typeof value === 'string' ? value : typeof value === 'number' ? String(value) : ''
         )
