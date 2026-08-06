@@ -21,7 +21,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        'titlebar-drag flex h-12 shrink-0 items-center gap-1 border-b px-2 transition-[padding-left] duration-200 ease-linear',
+        'titlebar-drag flex h-12 shrink-0 items-center gap-1 border-b px-2 transition-[padding-left] duration-150 ease-linear',
         needsTrafficLightGap && 'pl-20',
         className
       )}
