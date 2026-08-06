@@ -177,7 +177,6 @@ function ViewTabs({
                       setRenameView(view)
                     }}
                   >
-                    <Pencil />
                     Rename view
                   </DropdownMenuItem>
                   {view.id !== defaultViewId && (
@@ -187,7 +186,6 @@ function ViewTabs({
                         variant="destructive"
                         onClick={() => setDeleteViewTarget(view)}
                       >
-                        <Trash2 />
                         Delete view
                       </DropdownMenuItem>
                     </>

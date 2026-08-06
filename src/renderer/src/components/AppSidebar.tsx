@@ -26,7 +26,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
 import {
   Sidebar,
@@ -154,10 +155,11 @@ function ProjectMenuItem({
     <>
       <SidebarMenuItem>
         <SidebarMenuButton
+          className="cursor-default"
           isActive={project.id === activeId}
           render={
             <NavLink to={`/project/${project.id}`}>
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-[4px] bg-muted text-[10px] font-semibold uppercase text-muted-foreground">
+              <span className="flexsize-4 shrink-0 items-center justify-center rounded-[4px] bg-muted text-[10px] font-semibold uppercase text-muted-foreground">
                 {project.name.charAt(0) || '?'}
               </span>
               <span className="truncate">{project.name}</span>
@@ -180,11 +182,10 @@ function ProjectMenuItem({
                 setRenameOpen(true)
               }}
             >
-              <Pencil />
               Rename
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
-              <Trash2 />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
