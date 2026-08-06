@@ -154,7 +154,7 @@ export function TableView({
           <td
             className={cn(
               heightInfo.rowClass,
-              'relative w-11 min-w-11 border-b border-r text-center'
+              'sticky left-0 z-[1] w-11 min-w-11 border-b border-r bg-background text-center group-hover/row:bg-[color-mix(in_oklch,var(--muted)_40%,var(--background))]'
             )}
           >
             <span className="text-xs tabular-nums text-muted-foreground group-hover/row:invisible">
@@ -226,7 +226,7 @@ export function TableView({
         <table ref={tableRef} className="min-w-full table-fixed border-separate border-spacing-0 text-sm">
           <thead className="sticky top-0 z-10 bg-background">
             <tr>
-              <th className="h-8 w-11 min-w-11 border-b border-r" />
+              <th className="sticky left-0 z-20 h-8 w-11 min-w-11 border-b border-r bg-background" />
               {visibleFields.map((field) => {
                 const info = fieldTypeInfo(field.type)
                 const width = columnWidth(field.id)
