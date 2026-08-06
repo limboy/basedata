@@ -1,0 +1,41 @@
+name: Release
+
+# Fires when a version tag is pushed (npm version creates tags like v0.2.0),
+# or manually from the Actions tab for a rebuild without cutting a new version.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write # electron-builder needs this to create/attach assets to a GitHub release
+
+jobs:
+  mac-arm64:
+    # macos-14+ GitHub-hosted runners are Apple Silicon, matching the --arm64 target below.
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - name: Build and publish (macOS, Apple Silicon)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Code signing: base64-encoded "Developer ID Application" .p12 + its export password.
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          # Notarization: electron-builder notarizes automatically once these three are set
+          # (see app-builder-lib's MacTargetHelper.getNotarizeOptions) — no extra config needed.
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npx electron-builder --mac --arm64 --publish always

@@ -13,10 +13,22 @@ files:
   - '!{tsconfig.json,tsconfig.*.json,components.json}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
 asar: true
+# GitHub is the update feed for electron-updater (added later): each publish
+# uploads latest-mac.yml alongside the zip, which is what autoUpdater polls.
+publish:
+  provider: github
+  owner: limboy
+  repo: basedata
+  # Release lands as a draft so a broken build never goes out automatically —
+  # publishing it (making it public) is a manual click on the GitHub release page.
+  releaseType: draft
 mac:
   target:
-    - dmg
-    - zip
+    # zip is required by electron-updater's Squirrel.Mac; dmg is for manual installs.
+    - target: dmg
+      arch: [arm64]
+    - target: zip
+      arch: [arm64]
   category: public.app-category.productivity
   icon: build/icon.icns
 dmg:
