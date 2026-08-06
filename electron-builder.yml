@@ -19,9 +19,9 @@ publish:
   provider: github
   owner: limboy
   repo: basedata
-  # Release lands as a draft so a broken build never goes out automatically —
-  # publishing it (making it public) is a manual click on the GitHub release page.
-  releaseType: draft
+  # Release publishes immediately when CI succeeds — no manual "Publish release"
+  # click. A passing build (incl. signing/notarization) goes live automatically.
+  releaseType: release
 mac:
   target:
     # zip is required by electron-updater's Squirrel.Mac; dmg is for manual installs.

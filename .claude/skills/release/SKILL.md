@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cuts a new BaseData desktop release — bumps the version, tags it, pushes, and lets GitHub Actions build the macOS (Apple Silicon) package with electron-builder and publish it as a draft GitHub Release. Use this whenever the user wants to "release", "ship", "cut a version", "publish a build", "make a new build available", or asks about the release/CI pipeline, auto-update, or electron-builder publishing for this repo — even if they just say "let's release" or name a version number.
+description: Cuts a new BaseData desktop release — bumps the version, tags it, pushes, and lets GitHub Actions build the macOS (Apple Silicon) package with electron-builder and publish it live as a public GitHub Release. Use this whenever the user wants to "release", "ship", "cut a version", "publish a build", "make a new build available", or asks about the release/CI pipeline, auto-update, or electron-builder publishing for this repo — even if they just say "let's release" or name a version number.
 ---
 
 # BaseData release
@@ -15,20 +15,24 @@ Only macOS arm64 is wired up right now (see `electron-builder.yml` — `mac.targ
 pins both `dmg` and `zip` to `arch: [arm64]`). Windows/Linux scripts still exist for
 local `dist:win` / `dist:linux` builds but aren't part of this CI pipeline.
 
-## Why the release lands as a draft
+## The release goes live automatically — there is no draft step
 
-`electron-builder.yml` sets `publish.releaseType: draft`. CI can safely run
-end-to-end — build, upload assets, create the GitHub release — without ever making
-something public on its own. The release only goes live when a human clicks
-"Publish release" on GitHub. Treat that as the actual publish step: pushing the tag
-is not it.
+`electron-builder.yml` sets `publish.releaseType: release`. As soon as CI finishes
+building, signing, and notarizing successfully, the GitHub release is created
+**public** — no human clicks "Publish release." That means **the tag push is the
+actual publish step**: once `git push --follow-tags` lands and CI goes green, the
+build is live and users can download it. There is no later review point to catch
+a bad release before it's public.
+
+(This used to land as a draft — `releaseType: draft` — requiring a manual publish
+click. That safety net was intentionally removed at the user's request in favor of
+full automation.)
 
 ## Before touching anything: confirm with the user
 
-Pushing a tag is visible on GitHub, kicks off a CI run, and (once the resulting draft
-is published) makes a build public — treat the tag push as the point of no easy
-return, even though the release itself lands as a draft. Before running `npm version`
-or pushing, confirm with the user:
+Pushing a tag is the point of no easy return: it kicks off CI, and a green run makes
+the build public immediately, with no draft to review first. Before running
+`npm version` or pushing, confirm with the user:
 - which version bump (patch / minor / major, or an explicit version)
 - that the working tree is clean and on `main`
 
@@ -69,25 +73,43 @@ approved a release before — get it per release.
    gh run watch $(gh run list --workflow=release.yml -L 1 --json databaseId -q '.[0].databaseId') --exit-status
    ```
    It builds on `macos-14`, runs `electron-builder --mac --arm64 --publish always`,
-   and uploads the `dmg`, the `zip`, and `latest-mac.yml` to a draft release named
-   after the tag.
+   and uploads the `dmg`, the `zip`, and `latest-mac.yml` to a **public** release
+   named after the tag — live the moment the run goes green, no manual step after.
 
-6. **Hand the draft to the user** — don't publish it yourself:
+6. **Confirm it's live and hand the link to the user**:
    ```bash
    gh release view vX.Y.Z --web
    ```
-   Tell them it's a draft and that clicking "Publish release" on that page is what
-   actually makes it public.
+   There's nothing left for them to click — just let them know the build is out.
 
 ## If the build fails or you need to redo it
 
-Delete the tag and the (draft) release, fix the problem, and start over from step 3
-— don't try to reuse a version number:
+A failed run before the publish step completes leaves nothing public — just fix the
+problem and start over from step 3, don't reuse the version number. But because
+publishing is no longer gated behind a draft, a run that fails *after* the release
+was created (e.g. a later asset upload in a multi-target publish) may have already
+made a partial release public. Check before assuming it's safe to just delete and
+retag:
 ```bash
-gh release delete vX.Y.Z --yes 2>/dev/null   # only if a draft was already created
+gh release view vX.Y.Z --json isDraft,assets  # see what's actually out there
+gh release delete vX.Y.Z --yes 2>/dev/null   # only after confirming with the user
 git push origin :refs/tags/vX.Y.Z
 git tag -d vX.Y.Z
 ```
+If a release already went public with partial or broken assets, tell the user before
+deleting it — don't silently remove something that may already have been downloaded.
+
+### Known failure mode: duplicate releases from a publish race
+
+`electron-builder`'s `dmg` and `zip` mac targets each call get-or-create on the
+GitHub release for the tag when publishing, and those calls can race — both see "no
+release yet" and each create one, splitting the assets (e.g. `dmg` in one release,
+`zip` + `latest-mac.yml` in another). `.github/workflows/release.yml` has a step
+that pre-creates the release before `electron-builder` runs specifically to close
+this race, but if it ever shows up anyway (e.g. workflow was dispatched manually and
+skipped that step, or the race happens elsewhere), check `gh release list` for two
+entries under the same tag, merge the assets into one via the GitHub API, and delete
+the other. Since releases now go public immediately, catch and fix this fast.
 
 ## Auto-update — not wired up yet, but the plumbing is ready
 
