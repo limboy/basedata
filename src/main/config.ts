@@ -39,28 +39,36 @@ export function getDataDir(): string {
 }
 
 /**
- * Moves the projects/ and images/ folders to a new location and points the
- * app at it from now on. Copies first, then removes the old copies, so a
- * failed copy leaves the original data untouched.
+ * Points the app at a new data folder. By default it also moves the
+ * existing projects/ and images/ folders there — copying first and only
+ * removing the old copies once that succeeds, so a failed copy leaves the
+ * original data untouched. Pass `move: false` to just switch to the new
+ * (presumably empty, or already-populated) folder and leave the old data
+ * where it is.
  */
-export async function setDataDir(newDir: string): Promise<void> {
+export async function setDataDir(newDir: string, { move = true }: { move?: boolean } = {}): Promise<void> {
   const from = getDataDir()
   if (newDir === from) return
 
-  // Refuse to move data into a folder nested inside the current one — that
-  // would have the copy step write into the very folder it's reading from.
-  const rel = relative(from, newDir)
-  if (rel && !rel.startsWith('..') && !isAbsolute(rel)) {
-    throw new Error('The new folder cannot be inside the current data folder.')
+  const subdirs = ['projects', 'images']
+
+  if (move) {
+    // Refuse to move data into a folder nested inside the current one — that
+    // would have the copy step write into the very folder it's reading from.
+    const rel = relative(from, newDir)
+    if (rel && !rel.startsWith('..') && !isAbsolute(rel)) {
+      throw new Error('The new folder cannot be inside the current data folder.')
+    }
   }
 
   await fs.mkdir(newDir, { recursive: true })
 
-  const subdirs = ['projects', 'images']
-  for (const sub of subdirs) {
-    const src = join(from, sub)
-    if (!existsSync(src)) continue
-    await fs.cp(src, join(newDir, sub), { recursive: true })
+  if (move) {
+    for (const sub of subdirs) {
+      const src = join(from, sub)
+      if (!existsSync(src)) continue
+      await fs.cp(src, join(newDir, sub), { recursive: true })
+    }
   }
 
   currentDataDir = newDir
@@ -70,8 +78,10 @@ export async function setDataDir(newDir: string): Promise<void> {
     writeConfig({ dataDir: newDir })
   }
 
-  for (const sub of subdirs) {
-    const src = join(from, sub)
-    if (existsSync(src)) await fs.rm(src, { recursive: true, force: true })
+  if (move) {
+    for (const sub of subdirs) {
+      const src = join(from, sub)
+      if (existsSync(src)) await fs.rm(src, { recursive: true, force: true })
+    }
   }
 }

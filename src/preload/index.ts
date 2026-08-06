@@ -26,7 +26,7 @@ const api: Api = {
   },
   getDataDir: () => ipcRenderer.invoke('settings:getDataDir'),
   pickDataDir: () => ipcRenderer.invoke('settings:pickDataDir'),
-  setDataDir: (dir: string) => ipcRenderer.invoke('settings:setDataDir', dir)
+  setDataDir: (dir: string, move: boolean) => ipcRenderer.invoke('settings:setDataDir', dir, move)
 }
 
 contextBridge.exposeInMainWorld('api', api)

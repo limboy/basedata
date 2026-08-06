@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { FolderOpen } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface SettingsDialogProps {
   open: boolean
@@ -15,6 +16,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
   const [defaultDir, setDefaultDir] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [moveExisting, setMoveExisting] = useState(true)
 
   useEffect(() => {
     if (!open) return
@@ -29,7 +31,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
     setBusy(true)
     setError(null)
     try {
-      await window.api.setDataDir(dir)
+      await window.api.setDataDir(dir, moveExisting)
       setCurrent(dir)
       await queryClient.invalidateQueries()
     } catch (err) {
@@ -78,9 +80,14 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
               </Button>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Existing projects and images are moved to the new folder.
-          </p>
+          <label className="flex cursor-pointer items-center gap-2 pt-1 text-xs text-muted-foreground">
+            <Checkbox
+              checked={moveExisting}
+              onCheckedChange={(checked) => setMoveExisting(checked === true)}
+              disabled={busy}
+            />
+            Move existing projects and images to the new folder
+          </label>
         </div>
       </DialogContent>
     </Dialog>

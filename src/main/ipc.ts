@@ -31,8 +31,8 @@ export function registerIpc(): void {
     return result.filePaths[0]
   })
 
-  ipcMain.handle('settings:setDataDir', async (_e, dir: string) => {
-    await setDataDir(dir)
+  ipcMain.handle('settings:setDataDir', async (_e, dir: string, move: boolean) => {
+    await setDataDir(dir, { move })
     watchProjects()
     for (const win of BrowserWindow.getAllWindows()) {
       win.webContents.send('projects:changed')

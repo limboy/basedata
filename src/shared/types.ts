@@ -131,6 +131,10 @@ export interface Api {
   getDataDir: () => Promise<{ current: string; default: string }>
   /** Opens a native folder picker; returns the chosen path, or null if cancelled. */
   pickDataDir: () => Promise<string | null>
-  /** Moves existing data to `dir` and stores new projects/images there from now on. */
-  setDataDir: (dir: string) => Promise<void>
+  /**
+   * Stores new projects/images at `dir` from now on. When `move` is true
+   * (the default a caller should pass explicitly), existing data is moved
+   * there first; otherwise the app just switches over and leaves it in place.
+   */
+  setDataDir: (dir: string, move: boolean) => Promise<void>
 }
