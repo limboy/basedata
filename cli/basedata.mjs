@@ -13,7 +13,7 @@ import { join, extname, basename } from 'path'
 import { homedir } from 'os'
 import { randomUUID } from 'crypto'
 
-const FIELD_TYPES = ['text', 'number', 'select', 'multiSelect', 'date', 'checkbox', 'url', 'image']
+const FIELD_TYPES = ['text', 'number', 'select', 'multiSelect', 'date', 'checkbox', 'url', 'image', 'audio']
 
 const CHOICE_COLORS = ['gray', 'red', 'orange', 'amber', 'green', 'teal', 'blue', 'indigo', 'purple', 'pink']
 
@@ -39,6 +39,7 @@ function dataDir() {
 
 const projectsDir = () => join(dataDir(), 'projects')
 const imagesDir = () => join(dataDir(), 'images')
+const audioDir = () => join(dataDir(), 'audio')
 
 // ---------------------------------------------------------------------------
 // Storage (same format + atomic write strategy as the app)
@@ -171,6 +172,17 @@ async function coerceValue(field, value) {
       const name = `${uuid()}${extname(str).toLowerCase() || '.png'}`
       await fs.copyFile(str, join(imagesDir(), name))
       return `app-image:///${name}`
+    }
+    case 'audio': {
+      const str = String(value)
+      if (str.startsWith('app-audio://')) return str
+      if (!existsSync(str)) {
+        fail(`Field "${field.name}" expects a local audio file path or app-audio:// URL, got ${JSON.stringify(value)}`)
+      }
+      await fs.mkdir(audioDir(), { recursive: true })
+      const name = `${uuid()}${extname(str).toLowerCase() || '.mp3'}`
+      await fs.copyFile(str, join(audioDir(), name))
+      return `app-audio:///${name}`
     }
   }
   return value
@@ -354,6 +366,8 @@ VALUE FORMATS (per field type, when writing)
   multiSelect   array of choice names — unknown names are created automatically
   image         path to a local image file (copied into the app's storage),
                 or an existing app-image:/// URL
+  audio         path to a local audio file (copied into the app's storage),
+                or an existing app-audio:/// URL
   null          clears the field (any type)
 
 EXAMPLES
@@ -384,7 +398,13 @@ const commands = {
 
   async info() {
     const projects = await readAllProjects()
-    output({ dataDir: dataDir(), projectsDir: projectsDir(), imagesDir: imagesDir(), projectCount: projects.length })
+    output({
+      dataDir: dataDir(),
+      projectsDir: projectsDir(),
+      imagesDir: imagesDir(),
+      audioDir: audioDir(),
+      projectCount: projects.length
+    })
   },
 
   async 'create-project'({ positional, flags }) {
