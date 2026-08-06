@@ -87,7 +87,7 @@ export default function ProjectPage(): React.JSX.Element {
   return (
     <div className="flex h-full flex-col">
       <PageHeader>
-        <span className="px-2 text-sm font-semibold tracking-tight">{project.name}</span>
+        <span className="text-sm font-semibold tracking-tight">{project.name}</span>
         <span className="ml-auto text-xs text-muted-foreground">
           {project.records.length} record{project.records.length === 1 ? '' : 's'}
         </span>
