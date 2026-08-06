@@ -86,7 +86,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
               onCheckedChange={(checked) => setMoveExisting(checked === true)}
               disabled={busy}
             />
-            Move existing projects and images to the new folder
+            Move existing projects to the new folder
           </label>
         </div>
       </DialogContent>
