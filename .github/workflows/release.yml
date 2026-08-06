@@ -29,6 +29,21 @@ jobs:
 
       - run: npm run build
 
+      # electron-builder's mac target list (dmg + zip) each try to get-or-create the
+      # GitHub release for this tag when publishing, and those two calls can race —
+      # both see "no release yet" and each create one, leaving two draft releases
+      # for the same tag with the assets split between them. Pre-creating the draft
+      # here means electron-builder always finds it already existing and just
+      # uploads to it, so there's nothing left to race over.
+      - name: Ensure draft release exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --draft --title "${tag#v}" --notes ""
+          fi
+
       - name: Build and publish (macOS, Apple Silicon)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
