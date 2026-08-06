@@ -31,17 +31,26 @@ jobs:
 
       # electron-builder's mac target list (dmg + zip) each try to get-or-create the
       # GitHub release for this tag when publishing, and those two calls can race —
-      # both see "no release yet" and each create one, leaving two draft releases
-      # for the same tag with the assets split between them. Pre-creating the draft
-      # here means electron-builder always finds it already existing and just
-      # uploads to it, so there's nothing left to race over.
-      - name: Ensure draft release exists
+      # both see "no release yet" and each create one, leaving two releases for the
+      # same tag with the assets split between them. Pre-creating it here means
+      # electron-builder always finds it already existing and just uploads to it,
+      # so there's nothing left to race over.
+      #
+      # Created directly as public (no --draft) to match publish.releaseType: release
+      # in electron-builder.yml — electron-builder reuses whatever release it finds
+      # by tag as-is, draft or not, so if this created a draft the build would land
+      # as a draft forever regardless of that release-type setting.
+      #
+      # --generate-notes has GitHub build the release body from the commits (and any
+      # PRs) since the previous release tag, so there's no separate changelog to
+      # maintain by hand.
+      - name: Ensure release exists
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF_NAME}"
           if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --draft --title "${tag#v}" --notes ""
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "${tag#v}" --generate-notes
           fi
 
       - name: Build and publish (macOS, Apple Silicon)

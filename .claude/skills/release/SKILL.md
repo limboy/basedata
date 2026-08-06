@@ -72,9 +72,12 @@ approved a release before — get it per release.
    ```bash
    gh run watch $(gh run list --workflow=release.yml -L 1 --json databaseId -q '.[0].databaseId') --exit-status
    ```
-   It builds on `macos-14`, runs `electron-builder --mac --arm64 --publish always`,
-   and uploads the `dmg`, the `zip`, and `latest-mac.yml` to a **public** release
-   named after the tag — live the moment the run goes green, no manual step after.
+   It pre-creates the GitHub release with `gh release create ... --generate-notes`
+   (release notes auto-built from the commits/PRs since the previous release — no
+   changelog to maintain by hand), builds on `macos-14`, runs
+   `electron-builder --mac --arm64 --publish always`, and uploads the `dmg`, the
+   `zip`, and `latest-mac.yml` to that release — live the moment the run goes green,
+   no manual step after.
 
 6. **Confirm it's live and hand the link to the user**:
    ```bash
@@ -110,6 +113,16 @@ this race, but if it ever shows up anyway (e.g. workflow was dispatched manually
 skipped that step, or the race happens elsewhere), check `gh release list` for two
 entries under the same tag, merge the assets into one via the GitHub API, and delete
 the other. Since releases now go public immediately, catch and fix this fast.
+
+### Known failure mode: the pre-created release must not be a draft
+
+`electron-builder` reuses whatever release it finds matching the tag exactly as-is
+— draft or not — it never flips a draft to published after uploading. So the
+pre-create step in `.github/workflows/release.yml` must create the release without
+`--draft` (matching `publish.releaseType: release` in `electron-builder.yml`); if it
+ever creates a draft, every future release will silently pile up as an unpublished
+draft again regardless of what `releaseType` says. If releases mysteriously stop
+going live, check that step first.
 
 ## Auto-update — not wired up yet, but the plumbing is ready
 
