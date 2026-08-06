@@ -270,6 +270,7 @@ export function TableView({
             className={cn(
               heightInfo.rowClass,
               'sticky left-0 z-[1] w-11 min-w-11 border-b border-r bg-background text-center',
+              heightInfo.lineClamp > 1 ? 'align-top pt-1.5' : 'align-middle',
               isSelected
                 ? 'bg-accent/40'
                 : 'group-hover/row:bg-[color-mix(in_oklch,var(--muted)_40%,var(--background))]'
@@ -285,7 +286,8 @@ export function TableView({
             </span>
             <div
               className={cn(
-                'absolute inset-0 items-center justify-center',
+                'absolute inset-0 justify-center',
+                heightInfo.lineClamp > 1 ? 'items-start pt-1.5' : 'items-center',
                 isSelected ? 'flex' : 'hidden group-hover/row:flex'
               )}
             >
@@ -620,7 +622,7 @@ function CellContent({
 
   if (field.type === 'checkbox') {
     return (
-      <div className="flex h-full items-center px-2">
+      <div className={cn('flex h-full px-2', wrap ? 'items-start pt-1.5' : 'items-center')}>
         <Checkbox
           checked={value === true}
           onCheckedChange={(checked) => onChange(checked === true)}
