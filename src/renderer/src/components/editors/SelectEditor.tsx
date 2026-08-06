@@ -37,6 +37,11 @@ export function SelectEditor({
       ? [value]
       : []
 
+  // cmdk keyboard-focuses the first item in the list by default, which reads
+  // as "selected" even when it isn't. Point the initial focus at the current
+  // value instead, so the highlight and the checkmark always agree.
+  const firstSelectedChoice = choices.find((c) => selectedIds.includes(c.id))
+
   const toggle = (choiceId: string): void => {
     if (multi) {
       const next = selectedIds.includes(choiceId)
@@ -50,7 +55,7 @@ export function SelectEditor({
   }
 
   return (
-    <Command>
+    <Command defaultValue={firstSelectedChoice?.name}>
       <CommandInput placeholder="Search options…" />
       <CommandList>
         <CommandEmpty>No options found.</CommandEmpty>

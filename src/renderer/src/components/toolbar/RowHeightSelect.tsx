@@ -3,8 +3,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { ROW_HEIGHT_OPTIONS, rowHeightInfo } from '@/lib/rowHeight'
@@ -28,17 +29,22 @@ export function RowHeightSelect({
           <DropdownMenuLabel className="text-xs text-muted-foreground">
             Row height
           </DropdownMenuLabel>
-          {ROW_HEIGHT_OPTIONS.map((option) => (
-            <DropdownMenuItem
-              key={option.value}
-              onClick={() => onChange(option.value)}
-              data-active={option.value === active.value || undefined}
-              className="data-[active]:bg-accent mt-0.5 first:mt-0"
-            >
-              <option.icon className="size-3.5 text-muted-foreground" />
-              {option.label}
-            </DropdownMenuItem>
-          ))}
+          <DropdownMenuRadioGroup
+            value={active.value}
+            onValueChange={(next) => onChange(next as RowHeight)}
+          >
+            {ROW_HEIGHT_OPTIONS.map((option) => (
+              <DropdownMenuRadioItem
+                key={option.value}
+                value={option.value}
+                closeOnClick
+                className="mt-0.5 first:mt-0"
+              >
+                <option.icon className="size-3.5 text-muted-foreground" />
+                {option.label}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
