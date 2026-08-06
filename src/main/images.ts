@@ -1,10 +1,11 @@
-import { app, dialog, net, protocol, type BrowserWindow } from 'electron'
+import { dialog, net, protocol, type BrowserWindow } from 'electron'
 import { promises as fs } from 'fs'
 import { basename, extname, join } from 'path'
 import { pathToFileURL } from 'url'
 import { randomUUID } from 'crypto'
+import { getDataDir } from './config'
 
-export const imagesDir = (): string => join(app.getPath('userData'), 'images')
+export const imagesDir = (): string => join(getDataDir(), 'images')
 
 export async function pickImage(win: BrowserWindow | null): Promise<string | null> {
   const options = {

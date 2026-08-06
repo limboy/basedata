@@ -1,10 +1,10 @@
-import { app } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import { newProject } from '@shared/defaults'
 import type { Project, ProjectMeta } from '@shared/types'
+import { getDataDir } from './config'
 
-export const projectsDir = (): string => join(app.getPath('userData'), 'projects')
+export const projectsDir = (): string => join(getDataDir(), 'projects')
 
 const SAFE_ID = /^[a-zA-Z0-9-]+$/
 

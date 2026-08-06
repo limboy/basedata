@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useMatch, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Plus, Settings, Trash2 } from 'lucide-react'
 import type { ProjectMeta } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,6 +32,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupLabel,
@@ -44,6 +45,7 @@ import { useCreateProject, useDeleteProject, useProjects } from '@/lib/queries'
 import { isMac } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { UpdateButton } from '@/components/UpdateButton'
+import { SettingsDialog } from '@/components/SettingsDialog'
 
 export function AppSidebar(): React.JSX.Element {
   const navigate = useNavigate()
@@ -53,6 +55,7 @@ export function AppSidebar(): React.JSX.Element {
 
   const [createOpen, setCreateOpen] = useState(false)
   const [newName, setNewName] = useState('')
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleCreate = (): void => {
     createProject.mutate(newName, {
@@ -91,6 +94,19 @@ export function AppSidebar(): React.JSX.Element {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton className="cursor-default" onClick={() => setSettingsOpen(true)}>
+              <Settings />
+              <span>Settings</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-sm">

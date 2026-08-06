@@ -127,4 +127,10 @@ export interface Api {
   installUpdate: () => Promise<void>
   /** Fires once an update has finished downloading in the background; returns unsubscribe. */
   onUpdateReady: (callback: (version: string) => void) => () => void
+  /** Current and default root folders where projects/images are stored. */
+  getDataDir: () => Promise<{ current: string; default: string }>
+  /** Opens a native folder picker; returns the chosen path, or null if cancelled. */
+  pickDataDir: () => Promise<string | null>
+  /** Moves existing data to `dir` and stores new projects/images there from now on. */
+  setDataDir: (dir: string) => Promise<void>
 }

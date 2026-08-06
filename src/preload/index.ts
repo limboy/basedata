@@ -23,7 +23,10 @@ const api: Api = {
     return () => {
       ipcRenderer.removeListener('updater:ready', listener)
     }
-  }
+  },
+  getDataDir: () => ipcRenderer.invoke('settings:getDataDir'),
+  pickDataDir: () => ipcRenderer.invoke('settings:pickDataDir'),
+  setDataDir: (dir: string) => ipcRenderer.invoke('settings:setDataDir', dir)
 }
 
 contextBridge.exposeInMainWorld('api', api)
