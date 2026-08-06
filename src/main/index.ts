@@ -11,6 +11,12 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 const iconPath = join(__dirname, '../../build/icon.png')
+// Packaged builds get their dock icon from the .icns baked into the app
+// bundle, which macOS auto-masks into the rounded squircle. Dev mode sets
+// the dock icon manually via app.dock.setIcon(), which draws the image
+// as-is with no OS masking — so it needs its own pre-rounded, pre-padded
+// source to avoid showing up as a big flat square.
+const devIconPath = join(__dirname, '../../build/icon-dev.png')
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -44,7 +50,7 @@ function createWindow(): void {
 
 app.whenReady().then(async () => {
   if (process.platform === 'darwin' && !app.isPackaged) {
-    app.dock?.setIcon(iconPath)
+    app.dock?.setIcon(devIconPath)
   }
   registerImageProtocol()
   registerIpc()
