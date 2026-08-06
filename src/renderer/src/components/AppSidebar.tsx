@@ -73,7 +73,7 @@ export function AppSidebar(): React.JSX.Element {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Projects</SidebarGroupLabel>
+          <SidebarGroupLabel className="cursor-default">Projects</SidebarGroupLabel>
           <SidebarGroupAction title="New project" onClick={() => setCreateOpen(true)}>
             <Plus />
             <span className="sr-only">New project</span>
@@ -159,9 +159,6 @@ function ProjectMenuItem({
           isActive={project.id === activeId}
           render={
             <NavLink to={`/project/${project.id}`}>
-              <span className="flexsize-4 shrink-0 items-center justify-center rounded-[4px] bg-muted text-[10px] font-semibold uppercase text-muted-foreground">
-                {project.name.charAt(0) || '?'}
-              </span>
               <span className="truncate">{project.name}</span>
             </NavLink>
           }
