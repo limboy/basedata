@@ -43,7 +43,7 @@ export function FieldsPopover({
             return (
               <label
                 key={field.id}
-                className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+                className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
               >
                 <Checkbox
                   checked={visible}

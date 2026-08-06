@@ -136,7 +136,7 @@ function GalleryCard({
 
   return (
     <div
-      className="cursor-pointer overflow-hidden rounded-lg border bg-card shadow-xs transition-shadow hover:shadow-md"
+      className="overflow-hidden rounded-lg border bg-card shadow-xs transition-shadow hover:shadow-md"
       onClick={onClick}
     >
       {coverField && (

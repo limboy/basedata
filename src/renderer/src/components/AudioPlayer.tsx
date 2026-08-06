@@ -76,7 +76,7 @@ export function AudioPlayer({ src, className }: { src: string; className?: strin
           <Play className="size-3 translate-x-px" fill="currentColor" />
         )}
       </button>
-      <div className="relative h-1 min-w-10 flex-1 cursor-pointer rounded-full bg-foreground/15" onClick={seek}>
+      <div className="relative h-1 min-w-10 flex-1 rounded-full bg-foreground/15" onClick={seek}>
         <div
           className="absolute inset-y-0 left-0 rounded-full bg-foreground/60"
           style={{ width: `${progress * 100}%` }}

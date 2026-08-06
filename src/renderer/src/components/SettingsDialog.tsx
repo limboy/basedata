@@ -80,7 +80,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps): Rea
               </Button>
             )}
           </div>
-          <label className="flex cursor-pointer items-center gap-2 pt-1 text-xs text-muted-foreground">
+          <label className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
             <Checkbox
               checked={moveExisting}
               onCheckedChange={(checked) => setMoveExisting(checked === true)}

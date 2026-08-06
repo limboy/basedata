@@ -303,7 +303,7 @@ function KanbanCard({
   return (
     <div
       className={cn(
-        'cursor-pointer rounded-md border bg-card p-2.5 shadow-xs transition-shadow hover:shadow-sm',
+        'rounded-md border bg-card p-2.5 shadow-xs transition-shadow hover:shadow-sm',
         className
       )}
       onClick={onClick}

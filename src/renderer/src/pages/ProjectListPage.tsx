@@ -88,7 +88,7 @@ function ProjectCard({ project }: { project: ProjectMeta }): React.JSX.Element {
 
   return (
     <Card
-      className="group cursor-pointer gap-0 p-4 transition-colors hover:bg-accent/50"
+      className="group gap-0 p-4 transition-colors hover:bg-accent/50"
       onClick={() => navigate(`/project/${project.id}`)}
     >
       <div className="flex size-9 items-center justify-center rounded-md border bg-muted/50 text-sm font-semibold uppercase text-muted-foreground">
