@@ -27,6 +27,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/PageHeader'
 import { RecordSheet } from '@/components/RecordSheet'
@@ -125,6 +135,11 @@ function ViewTabs({
 }): React.JSX.Element {
   const [renameView, setRenameView] = useState<View | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  const [deleteViewTarget, setDeleteViewTarget] = useState<View | null>(null)
+
+  // The first view is the project's default/primary view and can't be
+  // deleted, mirroring how Airtable/Notion-style tools protect it.
+  const defaultViewId = project.views[0]?.id
 
   return (
     <div className="flex h-10 shrink-0 items-center gap-0.5 border-b px-3">
@@ -165,12 +180,12 @@ function ViewTabs({
                     <Pencil />
                     Rename view
                   </DropdownMenuItem>
-                  {project.views.length > 1 && (
+                  {view.id !== defaultViewId && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         variant="destructive"
-                        onClick={() => update((p) => ops.deleteView(p, view.id))}
+                        onClick={() => setDeleteViewTarget(view)}
                       >
                         <Trash2 />
                         Delete view
@@ -248,6 +263,32 @@ function ViewTabs({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={deleteViewTarget !== null}
+        onOpenChange={(open) => !open && setDeleteViewTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{deleteViewTarget?.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the view and its filters, sorts, and layout. Records aren’t affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteViewTarget) update((p) => ops.deleteView(p, deleteViewTarget.id))
+                setDeleteViewTarget(null)
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
