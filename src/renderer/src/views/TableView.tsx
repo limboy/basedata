@@ -52,7 +52,9 @@ export function TableView({
   onOpenRecord: (recordId: string) => void
 }): React.JSX.Element {
   const config = view.config
-  const [fieldDialog, setFieldDialog] = useState<{ field?: Field } | null>(null)
+  const [fieldDialog, setFieldDialog] = useState<{ field?: Field; insertIndex?: number } | null>(
+    null
+  )
   const [deleteFieldTarget, setDeleteFieldTarget] = useState<Field | null>(null)
   const [selectedCell, setSelectedCell] = useState<{ recordId: string; fieldId: string } | null>(
     null
@@ -184,6 +186,23 @@ export function TableView({
                         <DropdownMenuItem onClick={() => setFieldDialog({ field })}>
                           Edit field
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const index = project.fields.findIndex((f) => f.id === field.id)
+                            setFieldDialog({ insertIndex: index })
+                          }}
+                        >
+                          Insert left
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            const index = project.fields.findIndex((f) => f.id === field.id)
+                            setFieldDialog({ insertIndex: index + 1 })
+                          }}
+                        >
+                          Insert right
+                        </DropdownMenuItem>
                         {project.fields.length > 1 && (
                           <>
                             <DropdownMenuSeparator />
@@ -240,7 +259,9 @@ export function TableView({
         field={fieldDialog?.field}
         onSubmit={(field) =>
           update((p) =>
-            fieldDialog?.field ? ops.updateField(p, field.id, field) : ops.addField(p, field)
+            fieldDialog?.field
+              ? ops.updateField(p, field.id, field)
+              : ops.addField(p, field, fieldDialog?.insertIndex)
           )
         }
       />

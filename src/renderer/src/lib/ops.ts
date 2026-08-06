@@ -45,8 +45,15 @@ export function deleteRecord(project: Project, recordId: string): Project {
   return { ...project, records: project.records.filter((r) => r.id !== recordId) }
 }
 
-export function addField(project: Project, field: Field): Project {
-  return { ...project, fields: [...project.fields, field] }
+/** Appends `field` unless `index` is given, in which case it's inserted there. */
+export function addField(project: Project, field: Field, index?: number): Project {
+  const fields = [...project.fields]
+  if (index === undefined || index < 0 || index >= fields.length) {
+    fields.push(field)
+  } else {
+    fields.splice(index, 0, field)
+  }
+  return { ...project, fields }
 }
 
 export function updateField(project: Project, fieldId: string, patch: Partial<Field>): Project {
