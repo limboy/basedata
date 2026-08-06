@@ -66,6 +66,22 @@ export function TableView({
     null
   )
   const [liveWidth, setLiveWidth] = useState<{ fieldId: string; width: number } | null>(null)
+  const tableRef = useRef<HTMLTableElement>(null)
+
+  // Clicking anywhere outside the table clears the selected-cell highlight.
+  // Popover editors (select/date/image/audio) render into a portal outside
+  // the table DOM, so a click inside one of those doesn't count as "outside".
+  useEffect(() => {
+    const onPointerDown = (e: MouseEvent): void => {
+      const target = e.target
+      if (!(target instanceof Node)) return
+      if (tableRef.current?.contains(target)) return
+      if (target instanceof Element && target.closest('[data-slot="popover-content"]')) return
+      setSelectedCell(null)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [])
 
   const visibleFields = project.fields.filter((f) => !config.hiddenFieldIds.includes(f.id))
   const groupField = project.fields.find((f) => f.id === config.groupByFieldId)
@@ -206,7 +222,7 @@ export function TableView({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="min-w-full table-fixed border-separate border-spacing-0 text-sm">
+        <table ref={tableRef} className="min-w-full table-fixed border-separate border-spacing-0 text-sm">
           <thead className="sticky top-0 z-10 bg-background">
             <tr>
               <th className="h-8 w-11 min-w-11 border-b border-r" />

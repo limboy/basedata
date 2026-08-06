@@ -83,7 +83,7 @@ export function AudioPlayer({ src, className }: { src: string; className?: strin
         />
       </div>
       <span className="w-8 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
-        {formatTime(current)}
+        {formatTime(Math.max(0, duration - current))}
       </span>
     </div>
   )

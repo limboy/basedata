@@ -1,8 +1,8 @@
 import { BrowserWindow, dialog, ipcMain } from 'electron'
 import type { Project } from '@shared/types'
 import { createProject, deleteProject, ensureProjectsDir, getProject, listProjects, saveProject } from './storage'
-import { importImage, pickImage } from './images'
-import { importAudio, pickAudio } from './audio'
+import { importImageData, pickImage } from './images'
+import { importAudioData, pickAudio } from './audio'
 import { getReadyUpdateVersion, installReadyUpdate } from './updater'
 import { defaultDataDir, getDataDir, setDataDir } from './config'
 import { watchProjects } from './watcher'
@@ -14,9 +14,9 @@ export function registerIpc(): void {
   ipcMain.handle('projects:save', (_e, project: Project) => saveProject(project))
   ipcMain.handle('projects:delete', (_e, id: string) => deleteProject(id))
   ipcMain.handle('images:pick', (e) => pickImage(BrowserWindow.fromWebContents(e.sender)))
-  ipcMain.handle('images:import', (_e, path: string) => importImage(path))
+  ipcMain.handle('images:importData', (_e, name: string, data: ArrayBuffer) => importImageData(name, data))
   ipcMain.handle('audio:pick', (e) => pickAudio(BrowserWindow.fromWebContents(e.sender)))
-  ipcMain.handle('audio:import', (_e, path: string) => importAudio(path))
+  ipcMain.handle('audio:importData', (_e, name: string, data: ArrayBuffer) => importAudioData(name, data))
   ipcMain.handle('updater:status', () => getReadyUpdateVersion())
   ipcMain.handle('updater:install', () => installReadyUpdate())
 
