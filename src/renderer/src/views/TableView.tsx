@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, Expand, Plus } from 'lucide-react'
+import { ChevronDown, Plus, Trash2 } from 'lucide-react'
 import type { Field, Project, RecordRow, View } from '@shared/types'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   AlertDialog,
@@ -66,7 +67,24 @@ export function TableView({
     null
   )
   const [liveWidth, setLiveWidth] = useState<{ fieldId: string; width: number } | null>(null)
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
   const tableRef = useRef<HTMLTableElement>(null)
+
+  // Drop selections for records that no longer exist (deleted elsewhere, e.g.
+  // via the record detail sheet) so stale ids don't linger in the set.
+  useEffect(() => {
+    setSelectedRowIds((prev) => {
+      if (prev.size === 0) return prev
+      const validIds = new Set(project.records.map((r) => r.id))
+      let changed = false
+      const next = new Set<string>()
+      prev.forEach((id) => {
+        if (validIds.has(id)) next.add(id)
+        else changed = true
+      })
+      return changed ? next : prev
+    })
+  }, [project.records])
 
   // Clicking anywhere outside the table clears the selected-cell highlight.
   // Popover editors (select/date/image/audio) render into a portal outside
@@ -94,6 +112,95 @@ export function TableView({
   const groups: RecordGroup[] | null = groupField
     ? groupRecords(derived, groupField).filter((g) => g.records.length > 0)
     : null
+
+  const selectedVisibleCount = derived.reduce(
+    (count, r) => (selectedRowIds.has(r.id) ? count + 1 : count),
+    0
+  )
+  const allVisibleSelected = derived.length > 0 && selectedVisibleCount === derived.length
+  const someVisibleSelected = selectedVisibleCount > 0 && !allVisibleSelected
+
+  const toggleRowSelected = (recordId: string, checked: boolean): void => {
+    setSelectedRowIds((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(recordId)
+      else next.delete(recordId)
+      return next
+    })
+  }
+
+  const toggleSelectAll = (checked: boolean): void => {
+    setSelectedRowIds((prev) => {
+      const next = new Set(prev)
+      derived.forEach((r) => (checked ? next.add(r.id) : next.delete(r.id)))
+      return next
+    })
+  }
+
+  const deleteSelectedRows = async (): Promise<void> => {
+    const count = selectedRowIds.size
+    const confirmed = await window.api.showConfirmDialog({
+      title: `Delete ${count} record${count === 1 ? '' : 's'}?`,
+      message: `Delete ${count} record${count === 1 ? '' : 's'}?`,
+      detail: 'This action cannot be undone.',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      destructive: true
+    })
+    if (!confirmed) return
+    update((p) => ops.deleteRecords(p, Array.from(selectedRowIds)))
+    setSelectedRowIds(new Set())
+  }
+
+  const deleteSingleRecord = async (recordId: string): Promise<void> => {
+    const confirmed = await window.api.showConfirmDialog({
+      title: 'Delete record?',
+      message: 'Delete record?',
+      detail: 'This action cannot be undone.',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      destructive: true
+    })
+    if (!confirmed) return
+    update((p) => ops.deleteRecord(p, recordId))
+  }
+
+  const openRowContextMenu = (record: RecordRow) => async (e: React.MouseEvent): Promise<void> => {
+    e.preventDefault()
+    // Insert above/below splice into the underlying record order, which is
+    // meaningless once a sort reorders how rows actually display.
+    const isSorted = config.sorts.length > 0
+    const action = await window.api.showContextMenu([
+      { id: 'expand', label: 'Expand record' },
+      { id: 'sep-1', label: '', type: 'separator' },
+      ...(isSorted
+        ? []
+        : [
+            { id: 'insert-above', label: 'Insert record above' },
+            { id: 'insert-below', label: 'Insert record below' }
+          ]),
+      { id: 'duplicate', label: 'Duplicate record' },
+      { id: 'sep-2', label: '', type: 'separator' },
+      { id: 'delete', label: 'Delete record', danger: true }
+    ])
+    switch (action) {
+      case 'insert-above':
+        update((p) => ops.insertRecordAbove(p, record.id))
+        break
+      case 'insert-below':
+        update((p) => ops.insertRecordBelow(p, record.id))
+        break
+      case 'duplicate':
+        update((p) => ops.duplicateRecord(p, record.id))
+        break
+      case 'expand':
+        onOpenRecord(record.id)
+        break
+      case 'delete':
+        void deleteSingleRecord(record.id)
+        break
+    }
+  }
 
   const patchConfig = (patch: Partial<TableViewType['config']>): void => {
     update((p) =>
@@ -149,24 +256,44 @@ export function TableView({
     records.map((record) => {
       rowNumber += 1
       const number = rowNumber
+      const isSelected = selectedRowIds.has(record.id)
       return (
-        <tr key={record.id} className="group/row border-b transition-colors hover:bg-muted/40">
+        <tr
+          key={record.id}
+          className={cn(
+            'group/row border-b transition-colors hover:bg-muted/40',
+            isSelected && 'bg-accent/40'
+          )}
+          onContextMenu={(e) => void openRowContextMenu(record)(e)}
+        >
           <td
             className={cn(
               heightInfo.rowClass,
-              'sticky left-0 z-[1] w-11 min-w-11 border-b border-r bg-background text-center group-hover/row:bg-[color-mix(in_oklch,var(--muted)_40%,var(--background))]'
+              'sticky left-0 z-[1] w-11 min-w-11 border-b border-r bg-background text-center',
+              isSelected
+                ? 'bg-accent/40'
+                : 'group-hover/row:bg-[color-mix(in_oklch,var(--muted)_40%,var(--background))]'
             )}
           >
-            <span className="text-xs tabular-nums text-muted-foreground group-hover/row:invisible">
+            <span
+              className={cn(
+                'text-xs tabular-nums text-muted-foreground',
+                isSelected ? 'invisible' : 'group-hover/row:invisible'
+              )}
+            >
               {number}
             </span>
-            <button
-              className="absolute inset-0 hidden items-center justify-center text-muted-foreground hover:text-foreground group-hover/row:flex"
-              onClick={() => onOpenRecord(record.id)}
-              title="Expand record"
+            <div
+              className={cn(
+                'absolute inset-0 items-center justify-center',
+                isSelected ? 'flex' : 'hidden group-hover/row:flex'
+              )}
             >
-              <Expand className="size-3.5" />
-            </button>
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => toggleRowSelected(record.id, checked === true)}
+              />
+            </div>
           </td>
           {visibleFields.map((field) => (
             <TableCell
@@ -215,18 +342,45 @@ export function TableView({
           value={config.rowHeight}
           onChange={(rowHeight) => patchConfig({ rowHeight })}
         />
-        <span className="ml-auto text-xs text-muted-foreground">
-          {derived.length === project.records.length
-            ? null
-            : `${derived.length} of ${project.records.length} records`}
-        </span>
+        {selectedRowIds.size > 0 ? (
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {selectedRowIds.size} selected
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-7 gap-1.5 px-2 text-[13px] font-normal"
+              onClick={() => void deleteSelectedRows()}
+            >
+              <Trash2 className="size-3.5" />
+              Delete
+            </Button>
+          </div>
+        ) : (
+          <span className="ml-auto text-xs text-muted-foreground">
+            {derived.length === project.records.length
+              ? null
+              : `${derived.length} of ${project.records.length} records`}
+          </span>
+        )}
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
         <table ref={tableRef} className="min-w-full table-fixed border-separate border-spacing-0 text-sm">
           <thead className="sticky top-0 z-10 bg-background">
             <tr>
-              <th className="sticky left-0 z-20 h-8 w-11 min-w-11 border-b border-r bg-background" />
+              <th className="sticky left-0 z-20 h-8 w-11 min-w-11 border-b border-r bg-background">
+                {derived.length > 0 && (
+                  <div className="flex h-full items-center justify-center">
+                    <Checkbox
+                      checked={allVisibleSelected}
+                      indeterminate={someVisibleSelected}
+                      onCheckedChange={(checked) => toggleSelectAll(checked === true)}
+                    />
+                  </div>
+                )}
+              </th>
               {visibleFields.map((field) => {
                 const info = fieldTypeInfo(field.type)
                 const width = columnWidth(field.id)

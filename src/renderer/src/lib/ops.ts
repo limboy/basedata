@@ -27,6 +27,29 @@ export function addRecord(project: Project, values: Record<string, unknown> = {}
   return { ...project, records: [...project.records, newRecord(values)] }
 }
 
+export function insertRecordAbove(project: Project, recordId: string): Project {
+  const index = project.records.findIndex((r) => r.id === recordId)
+  const records = [...project.records]
+  records.splice(index === -1 ? records.length : index, 0, newRecord())
+  return { ...project, records }
+}
+
+export function insertRecordBelow(project: Project, recordId: string): Project {
+  const index = project.records.findIndex((r) => r.id === recordId)
+  const records = [...project.records]
+  records.splice(index === -1 ? records.length : index + 1, 0, newRecord())
+  return { ...project, records }
+}
+
+export function duplicateRecord(project: Project, recordId: string): Project {
+  const index = project.records.findIndex((r) => r.id === recordId)
+  if (index === -1) return project
+  const clone = newRecord({ ...project.records[index].values })
+  const records = [...project.records]
+  records.splice(index + 1, 0, clone)
+  return { ...project, records }
+}
+
 export function setRecordValue(
   project: Project,
   recordId: string,
@@ -43,6 +66,11 @@ export function setRecordValue(
 
 export function deleteRecord(project: Project, recordId: string): Project {
   return { ...project, records: project.records.filter((r) => r.id !== recordId) }
+}
+
+export function deleteRecords(project: Project, recordIds: string[]): Project {
+  const ids = new Set(recordIds)
+  return { ...project, records: project.records.filter((r) => !ids.has(r.id)) }
 }
 
 /** Appends `field` unless `index` is given, in which case it's inserted there. */
