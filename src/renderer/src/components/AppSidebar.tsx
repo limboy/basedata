@@ -13,16 +13,6 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -142,7 +132,6 @@ function ProjectMenuItem({
 
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameValue, setRenameValue] = useState(project.name)
-  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const handleRename = (): void => {
     const name = renameValue.trim()
@@ -157,7 +146,6 @@ function ProjectMenuItem({
   }
 
   const handleDelete = (): void => {
-    setDeleteOpen(false)
     deleteProject.mutate(project.id)
     if (project.id === activeId) {
       const remaining = (queryClient.getQueryData<ProjectMeta[]>(['projects']) ?? []).filter(
@@ -165,6 +153,18 @@ function ProjectMenuItem({
       )
       navigate(remaining.length > 0 ? `/project/${remaining[0].id}` : '/')
     }
+  }
+
+  const confirmDelete = async (): Promise<void> => {
+    const confirmed = await window.api.showConfirmDialog({
+      title: `Delete "${project.name}"?`,
+      message: `Delete "${project.name}"?`,
+      detail: `This permanently deletes the project and all of its ${project.recordCount} records.`,
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      destructive: true
+    })
+    if (confirmed) handleDelete()
   }
 
   const handleContextMenu = async (e: React.MouseEvent): Promise<void> => {
@@ -178,7 +178,7 @@ function ProjectMenuItem({
       setRenameValue(project.name)
       setRenameOpen(true)
     } else if (action === 'delete') {
-      setDeleteOpen(true)
+      void confirmDelete()
     }
   }
 
@@ -215,26 +215,6 @@ function ProjectMenuItem({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{project.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This permanently deletes the project and all of its {project.recordCount} records.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-white hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   )
 }

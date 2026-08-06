@@ -1,5 +1,5 @@
 import { BrowserWindow, dialog, ipcMain, Menu } from 'electron'
-import type { ContextMenuItem, Project } from '@shared/types'
+import type { ConfirmDialogOptions, ContextMenuItem, Project } from '@shared/types'
 import { createProject, deleteProject, ensureProjectsDir, getProject, listProjects, saveProject } from './storage'
 import { importImageData, pickImage } from './images'
 import { importAudioData, pickAudio } from './audio'
@@ -38,6 +38,23 @@ export function registerIpc(): void {
       )
       menu.popup({ window: win, callback: () => settle(null) })
     })
+  })
+
+  ipcMain.handle('dialog:confirm', async (e, options: ConfirmDialogOptions) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    const { title, message, detail, confirmLabel = 'OK', cancelLabel = 'Cancel', destructive } = options
+    // Cancel first/default so Enter/Return never confirms a destructive action by accident.
+    const boxOptions = {
+      type: destructive ? ('warning' as const) : ('question' as const),
+      buttons: [cancelLabel, confirmLabel],
+      defaultId: 0,
+      cancelId: 0,
+      title,
+      message,
+      detail
+    }
+    const result = win ? await dialog.showMessageBox(win, boxOptions) : await dialog.showMessageBox(boxOptions)
+    return result.response === 1
   })
 
   ipcMain.handle('settings:getDataDir', () => ({

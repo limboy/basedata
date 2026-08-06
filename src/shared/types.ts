@@ -120,9 +120,21 @@ export interface ContextMenuItem {
   danger?: boolean
 }
 
+export interface ConfirmDialogOptions {
+  title: string
+  message: string
+  detail?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  /** Styles the dialog as a warning and puts Cancel first/default, matching native destructive-confirm prompts. */
+  destructive?: boolean
+}
+
 export interface Api {
   /** Shows a native OS context menu at the cursor; resolves with the clicked item's id, or null if dismissed. */
   showContextMenu: (items: ContextMenuItem[]) => Promise<string | null>
+  /** Shows a native OS confirm dialog; resolves true if the user picked the confirm button. */
+  showConfirmDialog: (options: ConfirmDialogOptions) => Promise<boolean>
   listProjects: () => Promise<ProjectMeta[]>
   createProject: (name: string) => Promise<Project>
   getProject: (id: string) => Promise<Project>
