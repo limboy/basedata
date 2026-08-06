@@ -2,6 +2,7 @@ import { Check } from 'lucide-react'
 import type { Field } from '@shared/types'
 import { choiceById, choicesByIds, displayValue, isEmptyValue } from '@/lib/fields'
 import { cn } from '@/lib/utils'
+import { AudioPlayer } from './AudioPlayer'
 import { ChoiceBadge } from './ChoiceBadge'
 
 /** Read-only rendering of a record value, shared by table cells and cards. */
@@ -85,14 +86,7 @@ export function ValueDisplay({
       )
     }
     case 'audio':
-      return (
-        <audio
-          src={String(value)}
-          controls
-          onClick={(e) => e.stopPropagation()}
-          className={cn('h-8 max-w-full', className)}
-        />
-      )
+      return <AudioPlayer src={String(value)} className={cn('max-w-56', className)} />
     default:
       return <span className={cn(wrapClass, className)}>{displayValue(field, value)}</span>
   }

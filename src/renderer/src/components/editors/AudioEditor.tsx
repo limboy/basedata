@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FolderOpen, X } from 'lucide-react'
+import { AudioPlayer } from '@/components/AudioPlayer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -30,7 +31,7 @@ export function AudioEditor({
     <div className="flex flex-col gap-2">
       {current && (
         <div className="relative flex items-center gap-1.5">
-          <audio src={current} controls className="h-8 min-w-0 flex-1" />
+          <AudioPlayer src={current} className="min-w-0 flex-1" />
           <Button
             variant="secondary"
             size="icon"

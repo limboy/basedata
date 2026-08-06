@@ -437,7 +437,7 @@ function CellContent({
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const wrap = lineClamp > 1
-  const anchorRef = useRef<HTMLButtonElement>(null)
+  const anchorRef = useRef<HTMLDivElement>(null)
 
   if (field.type === 'checkbox') {
     return (
@@ -460,18 +460,26 @@ function CellContent({
   ) {
     return (
       <Popover open={editing} onOpenChange={setEditing}>
-        <button
+        <div
           ref={anchorRef}
+          role="button"
+          tabIndex={0}
           className={cn(
-            'flex h-full w-full overflow-hidden px-2 text-left',
+            'flex h-full w-full cursor-default overflow-hidden px-2 text-left',
             wrap ? 'flex-wrap content-start items-start gap-1 py-1.5' : 'items-center',
             selected && !editing && 'ring-2 ring-inset ring-ring'
           )}
           onClick={onSelect}
           onDoubleClick={() => setEditing(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onSelect()
+            }
+          }}
         >
           <ValueDisplay field={field} value={value} lineClamp={lineClamp} />
-        </button>
+        </div>
         <PopoverContent
           className={cn(
             'p-0',
