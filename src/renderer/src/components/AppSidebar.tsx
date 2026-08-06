@@ -71,6 +71,8 @@ export function AppSidebar(): React.JSX.Element {
           is gone. */}
       <div className={cn('titlebar-drag shrink-0', isMac ? 'h-10' : 'h-2')} />
 
+      <UpdateButton />
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="cursor-default">Projects</SidebarGroupLabel>
@@ -89,8 +91,6 @@ export function AppSidebar(): React.JSX.Element {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-
-      <UpdateButton />
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-sm">

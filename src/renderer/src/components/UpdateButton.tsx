@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Download } from 'lucide-react'
-import { SidebarFooter } from '@/components/ui/sidebar'
 
 type PreviewListener = (version: string | null) => void
 const previewListeners = new Set<PreviewListener>()
@@ -38,16 +36,16 @@ export function UpdateButton(): React.JSX.Element | null {
   }
 
   return (
-    <SidebarFooter className="items-center">
-      <button
-        onClick={handleInstall}
-        disabled={installing}
-        title={`Update to v${version} is ready — click to install and restart`}
-        className="inline-flex items-center gap-1.5 rounded-full bg-blue-400 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-500 disabled:pointer-events-none disabled:opacity-60"
-      >
-        <Download className="size-3.5" />
-        {installing ? 'Installing…' : 'Update'}
-      </button>
-    </SidebarFooter>
+    // Positioned absolutely (relative to the sidebar's fixed container) so it
+    // sits in the top-right corner without adding to the sidebar's normal
+    // flow — the Projects group stays put whether or not an update is ready.
+    <button
+      onClick={handleInstall}
+      disabled={installing}
+      title={`Update to v${version} is ready — click to install and restart`}
+      className="absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-blue-400 px-3 py-[5px] text-xs font-medium text-white transition-colors hover:bg-blue-500 disabled:pointer-events-none disabled:opacity-60"
+    >
+      {installing ? 'Installing…' : 'Update'}
+    </button>
   )
 }
