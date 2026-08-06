@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useMatch, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { Database, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import type { ProjectMeta } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,7 +34,6 @@ import {
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
@@ -65,17 +64,10 @@ export function AppSidebar(): React.JSX.Element {
 
   return (
     <Sidebar>
-      <SidebarHeader
-        className={cn('titlebar-drag gap-0 px-3 pb-1', isMac ? 'pt-10' : 'pt-2')}
-      >
-        <button
-          className="no-drag flex items-center gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-sidebar-accent"
-          onClick={() => navigate('/')}
-        >
-          <Database className="size-4 shrink-0 text-muted-foreground" />
-          <span className="text-sm font-semibold tracking-tight">BaseData</span>
-        </button>
-      </SidebarHeader>
+      {/* Empty drag spacer: still reserves room for the macOS traffic lights
+          and keeps the top of the sidebar draggable now that the title row
+          is gone. */}
+      <div className={cn('titlebar-drag shrink-0', isMac ? 'h-10' : 'h-2')} />
 
       <SidebarContent>
         <SidebarGroup>
