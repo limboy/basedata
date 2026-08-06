@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useMatch, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { MoreHorizontal, Pencil, Plus, Settings, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Plus, Settings } from 'lucide-react'
 import type { ProjectMeta } from '@shared/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

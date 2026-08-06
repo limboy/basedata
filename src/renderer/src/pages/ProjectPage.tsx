@@ -4,11 +4,9 @@ import {
   ArrowLeft,
   ChevronDown,
   GalleryVertical,
-  Pencil,
   Plus,
   SquareKanban,
   Table2,
-  Trash2,
   type LucideIcon
 } from 'lucide-react'
 import type { Project, View, ViewType } from '@shared/types'
