@@ -10,7 +10,11 @@ export function useProject(id: string) {
   return useQuery({
     queryKey: ['project', id],
     queryFn: () => window.api.getProject(id),
-    staleTime: Infinity
+    staleTime: Infinity,
+    // A missing project (deleted, or the data folder changed out from under
+    // us) fails deterministically — retrying just delays ProjectPage's
+    // fallback-navigation from noticing it's gone.
+    retry: false
   })
 }
 

@@ -1,6 +1,6 @@
 import { BrowserWindow, dialog, ipcMain } from 'electron'
 import type { Project } from '@shared/types'
-import { createProject, deleteProject, getProject, listProjects, saveProject } from './storage'
+import { createProject, deleteProject, ensureProjectsDir, getProject, listProjects, saveProject } from './storage'
 import { pickImage } from './images'
 import { getReadyUpdateVersion, installReadyUpdate } from './updater'
 import { defaultDataDir, getDataDir, setDataDir } from './config'
@@ -33,6 +33,9 @@ export function registerIpc(): void {
 
   ipcMain.handle('settings:setDataDir', async (_e, dir: string, move: boolean) => {
     await setDataDir(dir, { move })
+    // The move:false path points at a folder that may still be empty (no
+    // projects/ subfolder yet), which would make the watcher below throw.
+    await ensureProjectsDir()
     watchProjects()
     for (const win of BrowserWindow.getAllWindows()) {
       win.webContents.send('projects:changed')

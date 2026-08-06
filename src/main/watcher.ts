@@ -14,15 +14,24 @@ let activeWatcher: FSWatcher | undefined
  */
 export function watchProjects(): void {
   activeWatcher?.close()
+  activeWatcher = undefined
   let timer: NodeJS.Timeout | undefined
-  activeWatcher = watch(projectsDir(), (_event, filename) => {
-    if (!filename || !filename.endsWith('.json')) return
-    if (wasRecentSelfWrite(filename)) return
-    clearTimeout(timer)
-    timer = setTimeout(() => {
-      for (const win of BrowserWindow.getAllWindows()) {
-        win.webContents.send('projects:changed')
-      }
-    }, 200)
-  })
+  try {
+    activeWatcher = watch(projectsDir(), (_event, filename) => {
+      if (!filename || !filename.endsWith('.json')) return
+      if (wasRecentSelfWrite(filename)) return
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        for (const win of BrowserWindow.getAllWindows()) {
+          win.webContents.send('projects:changed')
+        }
+      }, 200)
+    })
+  } catch (err) {
+    // The directory may not exist yet (e.g. a freshly chosen, still-empty
+    // data folder). Skip watching rather than crashing the caller — the
+    // next call to watchProjects() (e.g. after the folder is created) will
+    // pick it up.
+    console.warn('watchProjects: failed to watch projects directory', err)
+  }
 }

@@ -60,7 +60,7 @@ export interface ViewProps {
 export default function ProjectPage(): React.JSX.Element {
   const { id = '' } = useParams()
   const navigate = useNavigate()
-  const { data: project, isLoading } = useProject(id)
+  const { data: project, isLoading, isError } = useProject(id)
   const { data: projects, isLoading: isLoadingProjects } = useProjects()
   const update = useUpdateProject(id)
 
@@ -68,16 +68,19 @@ export default function ProjectPage(): React.JSX.Element {
   const [openRecordId, setOpenRecordId] = useState<string | null>(null)
 
   // A project can disappear out from under this route (deleted elsewhere,
-  // stale link, etc). Once we're sure it's gone, fall back to another
+  // data folder switched to one that doesn't have it, stale link, etc).
+  // react-query keeps the last-successful `project` around even once a
+  // refetch errors, so isError — not just a missing `project` — is what
+  // tells us it's actually gone. Once we're sure, fall back to another
   // project instead of leaving the user stranded on a dead route.
   useEffect(() => {
-    if (isLoading || isLoadingProjects || project || !projects) return
+    if (isLoading || isLoadingProjects || (project && !isError) || !projects) return
     const next = projects.find((p) => p.id !== id) ?? projects[0]
     navigate(next ? `/project/${next.id}` : '/', { replace: true })
-  }, [isLoading, isLoadingProjects, project, projects, id, navigate])
+  }, [isLoading, isLoadingProjects, project, isError, projects, id, navigate])
 
   if (isLoading) return <div className="h-full" />
-  if (!project) {
+  if (!project || isError) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <p className="text-sm text-muted-foreground">Project not found.</p>

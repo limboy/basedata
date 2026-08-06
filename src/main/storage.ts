@@ -22,12 +22,12 @@ function projectPath(id: string): string {
   return join(projectsDir(), `${id}.json`)
 }
 
-async function ensureDir(): Promise<void> {
+export async function ensureProjectsDir(): Promise<void> {
   await fs.mkdir(projectsDir(), { recursive: true })
 }
 
 export async function listProjects(): Promise<ProjectMeta[]> {
-  await ensureDir()
+  await ensureProjectsDir()
   const files = (await fs.readdir(projectsDir())).filter((f) => f.endsWith('.json'))
   const metas: ProjectMeta[] = []
   for (const file of files) {
@@ -55,7 +55,7 @@ export async function getProject(id: string): Promise<Project> {
 }
 
 export async function saveProject(project: Project): Promise<void> {
-  await ensureDir()
+  await ensureProjectsDir()
   const target = projectPath(project.id)
   const tmp = `${target}.tmp`
   selfWrites.set(`${project.id}.json`, Date.now())
