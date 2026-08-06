@@ -73,6 +73,8 @@ export interface TableViewConfig {
   sorts: SortRule[]
   groupByFieldId?: string
   rowHeight?: RowHeight
+  /** Column width in pixels per field id; unset falls back to the default width. */
+  columnWidths?: Record<string, number>
 }
 
 export interface KanbanViewConfig {

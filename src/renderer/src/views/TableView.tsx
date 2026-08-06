@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Expand, Plus } from 'lucide-react'
 import type { Field, Project, RecordRow, View } from '@shared/types'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -40,6 +40,10 @@ import { cn } from '@/lib/utils'
 
 type TableViewType = Extract<View, { type: 'table' }>
 
+const DEFAULT_COLUMN_WIDTH = 176
+const MIN_COLUMN_WIDTH = 100
+const MAX_COLUMN_WIDTH = 600
+
 export function TableView({
   project,
   view,
@@ -59,6 +63,7 @@ export function TableView({
   const [selectedCell, setSelectedCell] = useState<{ recordId: string; fieldId: string } | null>(
     null
   )
+  const [liveWidth, setLiveWidth] = useState<{ fieldId: string; width: number } | null>(null)
 
   const visibleFields = project.fields.filter((f) => !config.hiddenFieldIds.includes(f.id))
   const groupField = project.fields.find((f) => f.id === config.groupByFieldId)
@@ -78,6 +83,43 @@ export function TableView({
         v.type === 'table' ? { ...v, config: { ...v.config, ...patch } } : v
       )
     )
+  }
+
+  const columnWidth = (fieldId: string): number =>
+    liveWidth?.fieldId === fieldId
+      ? liveWidth.width
+      : (config.columnWidths?.[fieldId] ?? DEFAULT_COLUMN_WIDTH)
+
+  // Drop the local drag override only once the persisted config has actually
+  // caught up to it — clearing it eagerly on mouseup can render one frame
+  // against the still-stale prop value, flashing back to the old width
+  // before the update lands.
+  useEffect(() => {
+    if (liveWidth && config.columnWidths?.[liveWidth.fieldId] === liveWidth.width) {
+      setLiveWidth(null)
+    }
+  }, [config.columnWidths, liveWidth])
+
+  const startResize = (fieldId: string) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const startX = e.clientX
+    const startWidth = columnWidth(fieldId)
+    const clamp = (w: number): number =>
+      Math.min(MAX_COLUMN_WIDTH, Math.max(MIN_COLUMN_WIDTH, w))
+
+    const onMove = (ev: MouseEvent): void => {
+      setLiveWidth({ fieldId, width: clamp(startWidth + (ev.clientX - startX)) })
+    }
+    const onUp = (ev: MouseEvent): void => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      const width = clamp(startWidth + (ev.clientX - startX))
+      setLiveWidth({ fieldId, width })
+      patchConfig({ columnWidths: { ...config.columnWidths, [fieldId]: width } })
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
   }
 
   const groupableFields = project.fields.filter((f) => f.type !== 'image')
@@ -115,6 +157,7 @@ export function TableView({
               record={record}
               update={update}
               heightInfo={heightInfo}
+              width={columnWidth(field.id)}
               selected={
                 selectedCell?.recordId === record.id && selectedCell?.fieldId === field.id
               }
@@ -161,16 +204,18 @@ export function TableView({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="w-max min-w-full border-separate border-spacing-0 text-sm">
+        <table className="min-w-full table-fixed border-separate border-spacing-0 text-sm">
           <thead className="sticky top-0 z-10 bg-background">
             <tr>
               <th className="h-8 w-11 min-w-11 border-b border-r" />
               {visibleFields.map((field) => {
                 const info = fieldTypeInfo(field.type)
+                const width = columnWidth(field.id)
                 return (
                   <th
                     key={field.id}
-                    className="h-8 w-44 min-w-44 max-w-64 border-b border-r p-0 text-left font-normal"
+                    style={{ width, minWidth: width, maxWidth: width }}
+                    className="relative h-8 border-b border-r p-0 text-left font-normal"
                   >
                     <DropdownMenu>
                       <DropdownMenuTrigger
@@ -216,12 +261,22 @@ export function TableView({
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
+                    <div
+                      role="separator"
+                      aria-orientation="vertical"
+                      onMouseDown={startResize(field.id)}
+                      className="group absolute inset-y-0 right-0 z-10 w-2 -mr-1 cursor-col-resize touch-none select-none"
+                    >
+                      <div className="mx-auto h-full w-0.5 bg-transparent group-hover:bg-ring/50 group-active:bg-ring" />
+                    </div>
                   </th>
                 )
               })}
-              <th className="h-8 w-11 border-b p-0 text-left">
+              {/* Unconstrained trailing column: absorbs leftover width so the fixed
+                  data columns above never get stretched or squeezed to compensate. */}
+              <th className="h-8 border-b p-0 text-left">
                 <button
-                  className="flex h-full w-full items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="flex h-full w-11 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   onClick={() => setFieldDialog({})}
                   title="Add field"
                 >
@@ -330,6 +385,7 @@ function TableCell({
   record,
   update,
   heightInfo,
+  width,
   selected,
   onSelect
 }: {
@@ -337,6 +393,7 @@ function TableCell({
   record: RecordRow
   update: ProjectUpdater
   heightInfo: RowHeightInfo
+  width: number
   selected: boolean
   onSelect: () => void
 }): React.JSX.Element {
@@ -345,7 +402,10 @@ function TableCell({
     update((p) => ops.setRecordValue(p, record.id, field.id, next))
 
   return (
-    <td className={cn(heightInfo.rowClass, 'w-44 min-w-44 max-w-64 border-b border-r p-0')}>
+    <td
+      style={{ width, minWidth: width, maxWidth: width }}
+      className={cn(heightInfo.rowClass, 'border-b border-r p-0')}
+    >
       <CellContent
         field={field}
         value={value}
