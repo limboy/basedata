@@ -1,6 +1,6 @@
 import { BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import type { ConfirmDialogOptions, ContextMenuItem, Project } from '@shared/types'
-import { createProject, deleteProject, ensureProjectsDir, getProject, listProjects, saveProject } from './storage'
+import { createProject, deleteProject, ensureProjectsRootDir, getProject, listProjects, saveProject } from './storage'
 import { importImageData, pickImage } from './images'
 import { importAudioData, pickAudio } from './audio'
 import { getReadyUpdateVersion, installReadyUpdate } from './updater'
@@ -13,10 +13,18 @@ export function registerIpc(): void {
   ipcMain.handle('projects:get', (_e, id: string) => getProject(id))
   ipcMain.handle('projects:save', (_e, project: Project) => saveProject(project))
   ipcMain.handle('projects:delete', (_e, id: string) => deleteProject(id))
-  ipcMain.handle('images:pick', (e) => pickImage(BrowserWindow.fromWebContents(e.sender)))
-  ipcMain.handle('images:importData', (_e, name: string, data: ArrayBuffer) => importImageData(name, data))
-  ipcMain.handle('audio:pick', (e) => pickAudio(BrowserWindow.fromWebContents(e.sender)))
-  ipcMain.handle('audio:importData', (_e, name: string, data: ArrayBuffer) => importAudioData(name, data))
+  ipcMain.handle('images:pick', (e, projectId: string) =>
+    pickImage(BrowserWindow.fromWebContents(e.sender), projectId)
+  )
+  ipcMain.handle('images:importData', (_e, projectId: string, name: string, data: ArrayBuffer) =>
+    importImageData(projectId, name, data)
+  )
+  ipcMain.handle('audio:pick', (e, projectId: string) =>
+    pickAudio(BrowserWindow.fromWebContents(e.sender), projectId)
+  )
+  ipcMain.handle('audio:importData', (_e, projectId: string, name: string, data: ArrayBuffer) =>
+    importAudioData(projectId, name, data)
+  )
   ipcMain.handle('updater:status', () => getReadyUpdateVersion())
   ipcMain.handle('updater:install', () => installReadyUpdate())
 
@@ -74,9 +82,9 @@ export function registerIpc(): void {
 
   ipcMain.handle('settings:setDataDir', async (_e, dir: string, move: boolean) => {
     await setDataDir(dir, { move })
-    // The move:false path points at a folder that may still be empty (no
-    // projects/ subfolder yet), which would make the watcher below throw.
-    await ensureProjectsDir()
+    // The move:false path points at a folder that may not exist yet, which
+    // would make the watcher below throw.
+    await ensureProjectsRootDir()
     watchProjects()
     for (const win of BrowserWindow.getAllWindows()) {
       win.webContents.send('projects:changed')

@@ -3,19 +3,20 @@ import { promises as fs } from 'fs'
 import { basename, extname, join } from 'path'
 import { pathToFileURL } from 'url'
 import { randomUUID } from 'crypto'
-import { getDataDir } from './config'
+import { projectDir, SAFE_ID } from './storage'
 
-export const imagesDir = (): string => join(getDataDir(), 'images')
+export const imagesDir = (projectId: string): string => join(projectDir(projectId), 'images')
 
-async function copyIntoImages(source: string): Promise<string> {
-  await fs.mkdir(imagesDir(), { recursive: true })
+async function copyIntoImages(projectId: string, source: string): Promise<string> {
+  const dir = imagesDir(projectId)
+  await fs.mkdir(dir, { recursive: true })
   const ext = extname(source).toLowerCase() || '.png'
   const name = `${randomUUID()}${ext}`
-  await fs.copyFile(source, join(imagesDir(), name))
-  return `app-image:///${name}`
+  await fs.copyFile(source, join(dir, name))
+  return `app-image:///${projectId}/${name}`
 }
 
-export async function pickImage(win: BrowserWindow | null): Promise<string | null> {
+export async function pickImage(win: BrowserWindow | null, projectId: string): Promise<string | null> {
   const options = {
     properties: ['openFile' as const],
     filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'avif', 'bmp'] }]
@@ -23,7 +24,7 @@ export async function pickImage(win: BrowserWindow | null): Promise<string | nul
   const result = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
   const source = result.filePaths[0]
   if (result.canceled || !source) return null
-  return copyIntoImages(source)
+  return copyIntoImages(projectId, source)
 }
 
 /**
@@ -31,27 +32,35 @@ export async function pickImage(win: BrowserWindow | null): Promise<string | nul
  * rather than a source path because `webUtils.getPathForFile` has proven
  * unreliable for drag-and-drop Files passed across the context bridge.
  */
-export async function importImageData(name: string, data: ArrayBuffer): Promise<string | null> {
+export async function importImageData(
+  projectId: string,
+  name: string,
+  data: ArrayBuffer
+): Promise<string | null> {
   try {
-    await fs.mkdir(imagesDir(), { recursive: true })
+    const dir = imagesDir(projectId)
+    await fs.mkdir(dir, { recursive: true })
     const ext = extname(name).toLowerCase() || '.png'
     const fileName = `${randomUUID()}${ext}`
     // fs.writeFile doesn't accept a raw ArrayBuffer (only Buffer/TypedArray/DataView).
-    await fs.writeFile(join(imagesDir(), fileName), Buffer.from(data))
-    return `app-image:///${fileName}`
+    await fs.writeFile(join(dir, fileName), Buffer.from(data))
+    return `app-image:///${projectId}/${fileName}`
   } catch (err) {
     console.error('[importImageData] failed to import', name, err)
     return null
   }
 }
 
-// Serves userData/images/<name> as app-image:///<name> so the renderer can
-// display locally stored images without loosening webSecurity.
+// Serves <dataDir>/<projectId>/images/<name> as app-image:///<projectId>/<name>
+// so the renderer can display locally stored images without loosening webSecurity.
 export function registerImageProtocol(): void {
   protocol.handle('app-image', (request) => {
     const pathname = decodeURIComponent(new URL(request.url).pathname)
-    const name = basename(pathname)
-    if (!name || name.startsWith('.')) return new Response(null, { status: 400 })
-    return net.fetch(pathToFileURL(join(imagesDir(), name)).toString())
+    const [projectId, rawName] = pathname.split('/').filter(Boolean)
+    const name = rawName ? basename(rawName) : ''
+    if (!projectId || !SAFE_ID.test(projectId) || !name || name.startsWith('.')) {
+      return new Response(null, { status: 400 })
+    }
+    return net.fetch(pathToFileURL(join(imagesDir(projectId), name)).toString())
   })
 }

@@ -3,7 +3,7 @@ import { existsSync, promises as fs, readFileSync, writeFileSync } from 'fs'
 import { join, relative, isAbsolute } from 'path'
 
 interface AppConfig {
-  /** Custom root directory for projects/images/audio, if the user changed it. */
+  /** Custom root directory for projects (each holding its own images/audio), if the user changed it. */
   dataDir?: string
 }
 
@@ -28,7 +28,8 @@ export const defaultDataDir = (): string => app.getPath('userData')
 
 let currentDataDir: string | null = null
 
-/** Root directory where the `projects/`, `images/` and `audio/` folders live. */
+/** Root directory holding the `projects/` folder (one subfolder per project:
+ *  `<id>/data.json`, plus any `images/`/`audio/` that project owns). */
 export function getDataDir(): string {
   if (currentDataDir) return currentDataDir
   const configured = readConfig().dataDir
@@ -39,18 +40,15 @@ export function getDataDir(): string {
 }
 
 /**
- * Points the app at a new data folder. By default it also moves the
- * existing projects/, images/ and audio/ folders there — copying first and only
- * removing the old copies once that succeeds, so a failed copy leaves the
- * original data untouched. Pass `move: false` to just switch to the new
- * (presumably empty, or already-populated) folder and leave the old data
- * where it is.
+ * Points the app at a new data folder. By default it also moves the existing
+ * `projects/` folder there — copying first and only removing the old copy
+ * once that succeeds, so a failed copy leaves the original data untouched.
+ * Pass `move: false` to just switch to the new (presumably empty, or
+ * already-populated) folder and leave the old data where it is.
  */
 export async function setDataDir(newDir: string, { move = true }: { move?: boolean } = {}): Promise<void> {
   const from = getDataDir()
   if (newDir === from) return
-
-  const subdirs = ['projects', 'images', 'audio']
 
   if (move) {
     // Refuse to move data into a folder nested inside the current one — that
@@ -63,12 +61,9 @@ export async function setDataDir(newDir: string, { move = true }: { move?: boole
 
   await fs.mkdir(newDir, { recursive: true })
 
-  if (move) {
-    for (const sub of subdirs) {
-      const src = join(from, sub)
-      if (!existsSync(src)) continue
-      await fs.cp(src, join(newDir, sub), { recursive: true })
-    }
+  const src = join(from, 'projects')
+  if (move && existsSync(src)) {
+    await fs.cp(src, join(newDir, 'projects'), { recursive: true })
   }
 
   currentDataDir = newDir
@@ -78,10 +73,7 @@ export async function setDataDir(newDir: string, { move = true }: { move?: boole
     writeConfig({ dataDir: newDir })
   }
 
-  if (move) {
-    for (const sub of subdirs) {
-      const src = join(from, sub)
-      if (existsSync(src)) await fs.rm(src, { recursive: true, force: true })
-    }
+  if (move && existsSync(src)) {
+    await fs.rm(src, { recursive: true, force: true })
   }
 }

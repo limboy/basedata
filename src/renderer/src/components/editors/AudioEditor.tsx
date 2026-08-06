@@ -7,15 +7,17 @@ import { useFileDrop } from '@/lib/useFileDrop'
 import { cn } from '@/lib/utils'
 
 export function AudioEditor({
+  projectId,
   value,
   onChange
 }: {
+  projectId: string
   value: unknown
   onChange: (value: unknown) => void
 }): React.JSX.Element {
   const current = typeof value === 'string' && value ? value : undefined
   const [urlDraft, setUrlDraft] = useState('')
-  const fileDrop = useFileDrop('audio', onChange)
+  const fileDrop = useFileDrop('audio', projectId, onChange)
 
   const applyUrl = (): void => {
     const url = urlDraft.trim()
@@ -26,7 +28,7 @@ export function AudioEditor({
   }
 
   const pickFile = async (): Promise<void> => {
-    const url = await window.api.pickAudio()
+    const url = await window.api.pickAudio(projectId)
     if (url) onChange(url)
   }
 

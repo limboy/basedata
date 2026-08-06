@@ -3,15 +3,18 @@
  * basedata CLI — lets scripts and AI agents read and write Basedata projects.
  *
  * It operates directly on the same JSON files the desktop app uses
- * (userData/projects/<id>.json). The app watches that folder, so changes made
- * here show up live in an open window. All output is JSON on stdout; errors
- * are JSON on stderr with a non-zero exit code. Run `basedata help` for the
- * full command reference.
+ * (userData/projects/<project-id>/data.json, with that project's images/audio
+ * alongside it). The app watches the projects directory, so changes made here
+ * show up live in an open window. All output is JSON on stdout; errors are
+ * JSON on stderr with a non-zero exit code. Run `basedata help` for the full
+ * command reference.
  */
 import { promises as fs, existsSync } from 'fs'
-import { join, extname, basename } from 'path'
+import { join, extname } from 'path'
 import { homedir } from 'os'
 import { randomUUID } from 'crypto'
+
+const SAFE_ID = /^[a-zA-Z0-9-]+$/
 
 const FIELD_TYPES = ['text', 'number', 'select', 'multiSelect', 'date', 'checkbox', 'url', 'image', 'audio']
 
@@ -37,25 +40,32 @@ function dataDir() {
   }
 }
 
-const projectsDir = () => join(dataDir(), 'projects')
-const imagesDir = () => join(dataDir(), 'images')
-const audioDir = () => join(dataDir(), 'audio')
+const projectsRootDir = () => join(dataDir(), 'projects')
+const projectDir = (id) => join(projectsRootDir(), id)
+const projectFile = (id) => join(projectDir(id), 'data.json')
+const imagesDir = (id) => join(projectDir(id), 'images')
+const audioDir = (id) => join(projectDir(id), 'audio')
 
 // ---------------------------------------------------------------------------
 // Storage (same format + atomic write strategy as the app)
 // ---------------------------------------------------------------------------
 
-async function readAllProjects() {
-  let files
+async function listProjectIds() {
+  let entries
   try {
-    files = await fs.readdir(projectsDir())
+    entries = await fs.readdir(projectsRootDir(), { withFileTypes: true })
   } catch {
     return []
   }
+  return entries.filter((e) => e.isDirectory() && SAFE_ID.test(e.name)).map((e) => e.name)
+}
+
+async function readAllProjects() {
+  const ids = await listProjectIds()
   const projects = []
-  for (const file of files.filter((f) => f.endsWith('.json'))) {
+  for (const id of ids) {
     try {
-      projects.push(JSON.parse(await fs.readFile(join(projectsDir(), file), 'utf-8')))
+      projects.push(JSON.parse(await fs.readFile(projectFile(id), 'utf-8')))
     } catch {
       // skip unreadable files rather than failing the whole list
     }
@@ -64,8 +74,8 @@ async function readAllProjects() {
 }
 
 async function saveProject(project) {
-  await fs.mkdir(projectsDir(), { recursive: true })
-  const target = join(projectsDir(), `${project.id}.json`)
+  await fs.mkdir(projectDir(project.id), { recursive: true })
+  const target = projectFile(project.id)
   const tmp = `${target}.tmp`
   await fs.writeFile(tmp, JSON.stringify(project, null, 2), 'utf-8')
   await fs.rename(tmp, target)
@@ -81,7 +91,7 @@ async function mutateProject(ref, fn) {
 
 async function resolveProject(ref) {
   const projects = await readAllProjects()
-  if (projects.length === 0) fail(`No projects found in ${projectsDir()}`)
+  if (projects.length === 0) fail(`No projects found in ${dataDir()}`)
   const byId = projects.find((p) => p.id === ref)
   if (byId) return byId
   const byName = projects.filter((p) => p.name.toLowerCase() === ref.toLowerCase())
@@ -126,7 +136,7 @@ function choiceIdFor(field, name) {
   return choice.id
 }
 
-async function coerceValue(field, value) {
+async function coerceValue(field, value, projectId) {
   if (value === null) return null
   switch (field.type) {
     case 'text':
@@ -168,10 +178,10 @@ async function coerceValue(field, value) {
       if (!existsSync(str)) {
         fail(`Field "${field.name}" expects a local image file path or app-image:// URL, got ${JSON.stringify(value)}`)
       }
-      await fs.mkdir(imagesDir(), { recursive: true })
+      await fs.mkdir(imagesDir(projectId), { recursive: true })
       const name = `${uuid()}${extname(str).toLowerCase() || '.png'}`
-      await fs.copyFile(str, join(imagesDir(), name))
-      return `app-image:///${name}`
+      await fs.copyFile(str, join(imagesDir(projectId), name))
+      return `app-image:///${projectId}/${name}`
     }
     case 'audio': {
       const str = String(value)
@@ -179,10 +189,10 @@ async function coerceValue(field, value) {
       if (!existsSync(str)) {
         fail(`Field "${field.name}" expects a local audio file path or app-audio:// URL, got ${JSON.stringify(value)}`)
       }
-      await fs.mkdir(audioDir(), { recursive: true })
+      await fs.mkdir(audioDir(projectId), { recursive: true })
       const name = `${uuid()}${extname(str).toLowerCase() || '.mp3'}`
-      await fs.copyFile(str, join(audioDir(), name))
-      return `app-audio:///${name}`
+      await fs.copyFile(str, join(audioDir(projectId), name))
+      return `app-audio:///${projectId}/${name}`
     }
   }
   return value
@@ -198,7 +208,7 @@ async function applyValues(project, record, input) {
     if (value === null) {
       delete record.values[field.id]
     } else {
-      record.values[field.id] = await coerceValue(field, value)
+      record.values[field.id] = await coerceValue(field, value, project.id)
     }
   }
 }
@@ -400,9 +410,6 @@ const commands = {
     const projects = await readAllProjects()
     output({
       dataDir: dataDir(),
-      projectsDir: projectsDir(),
-      imagesDir: imagesDir(),
-      audioDir: audioDir(),
       projectCount: projects.length
     })
   },
@@ -438,7 +445,7 @@ const commands = {
     if (flags.yes !== true) {
       fail(`Refusing to delete "${project.name}" (${project.records.length} records). Re-run with --yes to confirm.`)
     }
-    await fs.rm(join(projectsDir(), `${project.id}.json`), { force: true })
+    await fs.rm(projectDir(project.id), { recursive: true, force: true })
     output({ deleted: { id: project.id, name: project.name } })
   },
 

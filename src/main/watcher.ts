@@ -1,13 +1,14 @@
 import { BrowserWindow } from 'electron'
 import { watch, type FSWatcher } from 'fs'
-import { projectsDir, wasRecentSelfWrite } from './storage'
+import { DATA_FILE, projectsRootDir, wasRecentSelfWrite } from './storage'
 
 let activeWatcher: FSWatcher | undefined
 
 /**
- * Watches the projects directory so edits made outside the app (e.g. by the
- * agent CLI) show up live in open windows. The app's own saves are filtered
- * out via wasRecentSelfWrite to avoid refetch churn on every keystroke.
+ * Watches the projects directory (recursively, so each project's own
+ * `data.json` is covered) so edits made outside the app (e.g. by the agent
+ * CLI) show up live in open windows. The app's own saves are filtered out via
+ * wasRecentSelfWrite to avoid refetch churn on every keystroke.
  *
  * Safe to call again after the data directory changes — it closes any
  * previous watcher before watching the new location.
@@ -17,8 +18,8 @@ export function watchProjects(): void {
   activeWatcher = undefined
   let timer: NodeJS.Timeout | undefined
   try {
-    activeWatcher = watch(projectsDir(), (_event, filename) => {
-      if (!filename || !filename.endsWith('.json')) return
+    activeWatcher = watch(projectsRootDir(), { recursive: true }, (_event, filename) => {
+      if (!filename || !filename.endsWith(DATA_FILE)) return
       if (wasRecentSelfWrite(filename)) return
       clearTimeout(timer)
       timer = setTimeout(() => {
@@ -32,6 +33,6 @@ export function watchProjects(): void {
     // data folder). Skip watching rather than crashing the caller — the
     // next call to watchProjects() (e.g. after the folder is created) will
     // pick it up.
-    console.warn('watchProjects: failed to watch projects directory', err)
+    console.warn('watchProjects: failed to watch data directory', err)
   }
 }

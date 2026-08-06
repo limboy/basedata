@@ -140,11 +140,13 @@ export interface Api {
   getProject: (id: string) => Promise<Project>
   saveProject: (project: Project) => Promise<void>
   deleteProject: (id: string) => Promise<void>
-  pickImage: () => Promise<string | null>
-  pickAudio: () => Promise<string | null>
+  /** Images and audio are stored alongside the project that owns them, so
+   *  every picker/import call needs to know which project it's for. */
+  pickImage: (projectId: string) => Promise<string | null>
+  pickAudio: (projectId: string) => Promise<string | null>
   /** Writes dropped file bytes (e.g. from a drag-and-drop) into local storage. */
-  importImageData: (name: string, data: ArrayBuffer) => Promise<string | null>
-  importAudioData: (name: string, data: ArrayBuffer) => Promise<string | null>
+  importImageData: (projectId: string, name: string, data: ArrayBuffer) => Promise<string | null>
+  importAudioData: (projectId: string, name: string, data: ArrayBuffer) => Promise<string | null>
   /** Fires when project files change on disk outside the app; returns unsubscribe. */
   onProjectsChanged: (callback: () => void) => () => void
   /** Version of an already-downloaded update ready to install, if any. */

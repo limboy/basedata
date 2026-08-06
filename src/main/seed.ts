@@ -1,7 +1,6 @@
-import { existsSync } from 'fs'
 import { newRecord, newView } from '@shared/defaults'
 import type { Field, Project, SelectChoice } from '@shared/types'
-import { projectsDir, saveProject } from './storage'
+import { listProjectIds, saveProject } from './storage'
 
 const uuid = (): string => crypto.randomUUID()
 const now = (): string => new Date().toISOString()
@@ -14,7 +13,7 @@ const choice = (name: string, color: SelectChoice['color']): SelectChoice => ({
 
 // Seeds one demo project on first launch so every view has something to show.
 export async function seedIfEmpty(): Promise<void> {
-  if (existsSync(projectsDir())) return
+  if ((await listProjectIds()).length > 0) return
 
   const name: Field = { id: uuid(), name: 'Name', type: 'text' }
   const status: Field = {

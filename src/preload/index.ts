@@ -9,10 +9,12 @@ const api: Api = {
   getProject: (id: string) => ipcRenderer.invoke('projects:get', id),
   saveProject: (project: Project) => ipcRenderer.invoke('projects:save', project),
   deleteProject: (id: string) => ipcRenderer.invoke('projects:delete', id),
-  pickImage: () => ipcRenderer.invoke('images:pick'),
-  pickAudio: () => ipcRenderer.invoke('audio:pick'),
-  importImageData: (name: string, data: ArrayBuffer) => ipcRenderer.invoke('images:importData', name, data),
-  importAudioData: (name: string, data: ArrayBuffer) => ipcRenderer.invoke('audio:importData', name, data),
+  pickImage: (projectId: string) => ipcRenderer.invoke('images:pick', projectId),
+  pickAudio: (projectId: string) => ipcRenderer.invoke('audio:pick', projectId),
+  importImageData: (projectId: string, name: string, data: ArrayBuffer) =>
+    ipcRenderer.invoke('images:importData', projectId, name, data),
+  importAudioData: (projectId: string, name: string, data: ArrayBuffer) =>
+    ipcRenderer.invoke('audio:importData', projectId, name, data),
   onProjectsChanged: (callback: () => void) => {
     const listener = (): void => callback()
     ipcRenderer.on('projects:changed', listener)

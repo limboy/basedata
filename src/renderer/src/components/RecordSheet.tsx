@@ -44,6 +44,7 @@ export function RecordSheet({
                         {field.name}
                       </div>
                       <ValueEditor
+                        projectId={project.id}
                         field={field}
                         value={record.values[field.id]}
                         onChange={(value) =>

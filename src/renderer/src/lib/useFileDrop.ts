@@ -21,6 +21,7 @@ export interface FileDropHandlers {
  */
 export function useFileDrop(
   kind: 'image' | 'audio',
+  projectId: string,
   onChange: (value: string) => void
 ): FileDropHandlers {
   const [isOver, setIsOver] = useState(false)
@@ -48,7 +49,7 @@ export function useFileDrop(
     const importData = kind === 'image' ? window.api.importImageData : window.api.importAudioData
     void file
       .arrayBuffer()
-      .then((data) => importData(file.name, data))
+      .then((data) => importData(projectId, file.name, data))
       .then((url) => {
         if (url) onChange(url)
         else console.error(`[useFileDrop] failed to import dropped ${kind} file: ${file.name}`)

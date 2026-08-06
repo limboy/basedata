@@ -15,10 +15,12 @@ import { SelectEditor } from './SelectEditor'
 
 /** Full-size editor for one field value, used in the record detail sheet. */
 export function ValueEditor({
+  projectId,
   field,
   value,
   onChange
 }: {
+  projectId: string
   field: Field
   value: unknown
   onChange: (value: unknown) => void
@@ -63,9 +65,9 @@ export function ValueEditor({
     case 'multiSelect':
       return <SelectValueEditor field={field} value={value} onChange={onChange} />
     case 'image':
-      return <ImageEditor value={value} onChange={onChange} />
+      return <ImageEditor projectId={projectId} value={value} onChange={onChange} />
     case 'audio':
-      return <AudioEditor value={value} onChange={onChange} />
+      return <AudioEditor projectId={projectId} value={value} onChange={onChange} />
   }
 }
 

@@ -171,6 +171,7 @@ export function TableView({
           {visibleFields.map((field) => (
             <TableCell
               key={field.id}
+              projectId={project.id}
               field={field}
               record={record}
               update={update}
@@ -399,6 +400,7 @@ function GroupSection({
 }
 
 function TableCell({
+  projectId,
   field,
   record,
   update,
@@ -407,6 +409,7 @@ function TableCell({
   selected,
   onSelect
 }: {
+  projectId: string
   field: Field
   record: RecordRow
   update: ProjectUpdater
@@ -425,6 +428,7 @@ function TableCell({
       className={cn(heightInfo.rowClass, 'border-b border-r p-0')}
     >
       <CellContent
+        projectId={projectId}
         field={field}
         value={value}
         onChange={setValue}
@@ -437,6 +441,7 @@ function TableCell({
 }
 
 function CellContent({
+  projectId,
   field,
   value,
   onChange,
@@ -444,6 +449,7 @@ function CellContent({
   selected,
   onSelect
 }: {
+  projectId: string
   field: Field
   value: unknown
   onChange: (value: unknown) => void
@@ -456,7 +462,7 @@ function CellContent({
   const wrap = lineClamp > 1
   const anchorRef = useRef<HTMLDivElement>(null)
   const isFileField = field.type === 'image' || field.type === 'audio'
-  const fileDrop = useFileDrop(field.type === 'audio' ? 'audio' : 'image', onChange)
+  const fileDrop = useFileDrop(field.type === 'audio' ? 'audio' : 'image', projectId, onChange)
 
   if (field.type === 'checkbox') {
     return (
@@ -523,9 +529,9 @@ function CellContent({
           {field.type === 'date' ? (
             <DateEditor value={value} onChange={onChange} onDone={() => setEditing(false)} />
           ) : field.type === 'image' ? (
-            <ImageEditor value={value} onChange={onChange} />
+            <ImageEditor projectId={projectId} value={value} onChange={onChange} />
           ) : field.type === 'audio' ? (
-            <AudioEditor value={value} onChange={onChange} />
+            <AudioEditor projectId={projectId} value={value} onChange={onChange} />
           ) : (
             <SelectEditor
               field={field}

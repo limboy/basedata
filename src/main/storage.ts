@@ -4,9 +4,24 @@ import { newProject } from '@shared/defaults'
 import type { Project, ProjectMeta } from '@shared/types'
 import { getDataDir } from './config'
 
-export const projectsDir = (): string => join(getDataDir(), 'projects')
+export const SAFE_ID = /^[a-zA-Z0-9-]+$/
 
-const SAFE_ID = /^[a-zA-Z0-9-]+$/
+export const DATA_FILE = 'data.json'
+
+export const projectsRootDir = (): string => join(getDataDir(), 'projects')
+
+/** Each project lives in its own folder: `<dataDir>/projects/<id>/data.json`,
+ * with any images/audio it owns alongside it (`.../<id>/images/…`), so a
+ * project can be copied, backed up, or deleted as a single self-contained
+ * directory. */
+export function projectDir(id: string): string {
+  if (!SAFE_ID.test(id)) throw new Error(`Invalid project id: ${id}`)
+  return join(projectsRootDir(), id)
+}
+
+function projectFile(id: string): string {
+  return join(projectDir(id), DATA_FILE)
+}
 
 // Timestamps of writes made by this process, so the directory watcher can
 // tell the app's own saves apart from external ones (e.g. the agent CLI).
@@ -17,22 +32,22 @@ export function wasRecentSelfWrite(filename: string): boolean {
   return at !== undefined && Date.now() - at < 1000
 }
 
-function projectPath(id: string): string {
-  if (!SAFE_ID.test(id)) throw new Error(`Invalid project id: ${id}`)
-  return join(projectsDir(), `${id}.json`)
+export async function ensureProjectsRootDir(): Promise<void> {
+  await fs.mkdir(projectsRootDir(), { recursive: true })
 }
 
-export async function ensureProjectsDir(): Promise<void> {
-  await fs.mkdir(projectsDir(), { recursive: true })
+export async function listProjectIds(): Promise<string[]> {
+  await ensureProjectsRootDir()
+  const entries = await fs.readdir(projectsRootDir(), { withFileTypes: true })
+  return entries.filter((e) => e.isDirectory() && SAFE_ID.test(e.name)).map((e) => e.name)
 }
 
 export async function listProjects(): Promise<ProjectMeta[]> {
-  await ensureProjectsDir()
-  const files = (await fs.readdir(projectsDir())).filter((f) => f.endsWith('.json'))
+  const ids = await listProjectIds()
   const metas: ProjectMeta[] = []
-  for (const file of files) {
+  for (const id of ids) {
     try {
-      const raw = await fs.readFile(join(projectsDir(), file), 'utf-8')
+      const raw = await fs.readFile(projectFile(id), 'utf-8')
       const p = JSON.parse(raw) as Project
       metas.push({
         id: p.id,
@@ -50,18 +65,19 @@ export async function listProjects(): Promise<ProjectMeta[]> {
 }
 
 export async function getProject(id: string): Promise<Project> {
-  const raw = await fs.readFile(projectPath(id), 'utf-8')
+  const raw = await fs.readFile(projectFile(id), 'utf-8')
   return JSON.parse(raw) as Project
 }
 
 export async function saveProject(project: Project): Promise<void> {
-  await ensureProjectsDir()
-  const target = projectPath(project.id)
+  await fs.mkdir(projectDir(project.id), { recursive: true })
+  const target = projectFile(project.id)
   const tmp = `${target}.tmp`
-  selfWrites.set(`${project.id}.json`, Date.now())
+  const watchKey = `${project.id}/${DATA_FILE}`
+  selfWrites.set(watchKey, Date.now())
   await fs.writeFile(tmp, JSON.stringify(project, null, 2), 'utf-8')
   await fs.rename(tmp, target)
-  selfWrites.set(`${project.id}.json`, Date.now())
+  selfWrites.set(watchKey, Date.now())
 }
 
 export async function createProject(name: string): Promise<Project> {
@@ -71,6 +87,6 @@ export async function createProject(name: string): Promise<Project> {
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  selfWrites.set(`${id}.json`, Date.now())
-  await fs.rm(projectPath(id), { force: true })
+  selfWrites.set(`${id}/${DATA_FILE}`, Date.now())
+  await fs.rm(projectDir(id), { recursive: true, force: true })
 }

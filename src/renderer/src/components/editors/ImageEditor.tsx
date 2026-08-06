@@ -6,15 +6,17 @@ import { useFileDrop } from '@/lib/useFileDrop'
 import { cn } from '@/lib/utils'
 
 export function ImageEditor({
+  projectId,
   value,
   onChange
 }: {
+  projectId: string
   value: unknown
   onChange: (value: unknown) => void
 }): React.JSX.Element {
   const current = typeof value === 'string' && value ? value : undefined
   const [urlDraft, setUrlDraft] = useState('')
-  const fileDrop = useFileDrop('image', onChange)
+  const fileDrop = useFileDrop('image', projectId, onChange)
 
   const applyUrl = (): void => {
     const url = urlDraft.trim()
@@ -25,7 +27,7 @@ export function ImageEditor({
   }
 
   const pickFile = async (): Promise<void> => {
-    const url = await window.api.pickImage()
+    const url = await window.api.pickImage(projectId)
     if (url) onChange(url)
   }
 
