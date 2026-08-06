@@ -121,6 +121,11 @@ export interface Api {
   deleteProject: (id: string) => Promise<void>
   pickImage: () => Promise<string | null>
   pickAudio: () => Promise<string | null>
+  /** Copies a file already on disk (e.g. dropped from the OS file manager) into local storage. */
+  importImage: (path: string) => Promise<string | null>
+  importAudio: (path: string) => Promise<string | null>
+  /** Resolves the real filesystem path for a File from a drop event. */
+  getPathForFile: (file: File) => string
   /** Fires when project files change on disk outside the app; returns unsubscribe. */
   onProjectsChanged: (callback: () => void) => () => void
   /** Version of an already-downloaded update ready to install, if any. */

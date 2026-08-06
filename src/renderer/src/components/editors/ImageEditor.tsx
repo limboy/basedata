@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { FolderOpen, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useFileDrop } from '@/lib/useFileDrop'
+import { cn } from '@/lib/utils'
 
 export function ImageEditor({
   value,
@@ -12,6 +14,7 @@ export function ImageEditor({
 }): React.JSX.Element {
   const current = typeof value === 'string' && value ? value : undefined
   const [urlDraft, setUrlDraft] = useState('')
+  const fileDrop = useFileDrop('image', onChange)
 
   const applyUrl = (): void => {
     const url = urlDraft.trim()
@@ -27,7 +30,15 @@ export function ImageEditor({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      className={cn(
+        'flex flex-col gap-2 rounded-md',
+        fileDrop.isOver && 'bg-accent/60 ring-2 ring-primary'
+      )}
+      onDragOver={fileDrop.onDragOver}
+      onDragLeave={fileDrop.onDragLeave}
+      onDrop={fileDrop.onDrop}
+    >
       {current && (
         <div className="relative">
           <img src={current} alt="" className="max-h-40 w-full rounded-md border object-cover" />
@@ -43,7 +54,7 @@ export function ImageEditor({
       )}
       <Button variant="outline" size="sm" onClick={() => void pickFile()}>
         <FolderOpen data-slot="icon" />
-        Choose file…
+        Choose file… or drop it here
       </Button>
       <div className="flex gap-1.5">
         <Input

@@ -7,6 +7,14 @@ import { getDataDir } from './config'
 
 export const imagesDir = (): string => join(getDataDir(), 'images')
 
+async function copyIntoImages(source: string): Promise<string> {
+  await fs.mkdir(imagesDir(), { recursive: true })
+  const ext = extname(source).toLowerCase() || '.png'
+  const name = `${randomUUID()}${ext}`
+  await fs.copyFile(source, join(imagesDir(), name))
+  return `app-image:///${name}`
+}
+
 export async function pickImage(win: BrowserWindow | null): Promise<string | null> {
   const options = {
     properties: ['openFile' as const],
@@ -15,12 +23,16 @@ export async function pickImage(win: BrowserWindow | null): Promise<string | nul
   const result = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
   const source = result.filePaths[0]
   if (result.canceled || !source) return null
+  return copyIntoImages(source)
+}
 
-  await fs.mkdir(imagesDir(), { recursive: true })
-  const ext = extname(source).toLowerCase() || '.png'
-  const name = `${randomUUID()}${ext}`
-  await fs.copyFile(source, join(imagesDir(), name))
-  return `app-image:///${name}`
+/** Imports a file already on disk (e.g. dropped from the OS file manager). */
+export async function importImage(path: string): Promise<string | null> {
+  try {
+    return await copyIntoImages(path)
+  } catch {
+    return null
+  }
 }
 
 // Serves userData/images/<name> as app-image:///<name> so the renderer can

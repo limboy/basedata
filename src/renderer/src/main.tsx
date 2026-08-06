@@ -16,6 +16,12 @@ const queryClient = new QueryClient({
   }
 })
 
+// Chromium's default for an unhandled drop is to navigate the window to the
+// dropped file, replacing the whole app. Field-level drop zones call
+// preventDefault() themselves; this is just the fallback for drops that miss.
+window.addEventListener('dragover', (e) => e.preventDefault())
+window.addEventListener('drop', (e) => e.preventDefault())
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

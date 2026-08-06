@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { Api, Project } from '@shared/types'
 
 const api: Api = {
@@ -9,6 +9,9 @@ const api: Api = {
   deleteProject: (id: string) => ipcRenderer.invoke('projects:delete', id),
   pickImage: () => ipcRenderer.invoke('images:pick'),
   pickAudio: () => ipcRenderer.invoke('audio:pick'),
+  importImage: (path: string) => ipcRenderer.invoke('images:import', path),
+  importAudio: (path: string) => ipcRenderer.invoke('audio:import', path),
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
   onProjectsChanged: (callback: () => void) => {
     const listener = (): void => callback()
     ipcRenderer.on('projects:changed', listener)

@@ -37,6 +37,7 @@ import { fieldTypeInfo } from '@/lib/fields'
 import * as ops from '@/lib/ops'
 import type { ProjectUpdater } from '@/lib/queries'
 import { rowHeightInfo, type RowHeightInfo } from '@/lib/rowHeight'
+import { useFileDrop } from '@/lib/useFileDrop'
 import { cn } from '@/lib/utils'
 
 type TableViewType = Extract<View, { type: 'table' }>
@@ -438,6 +439,8 @@ function CellContent({
   const [draft, setDraft] = useState('')
   const wrap = lineClamp > 1
   const anchorRef = useRef<HTMLDivElement>(null)
+  const isFileField = field.type === 'image' || field.type === 'audio'
+  const fileDrop = useFileDrop(field.type === 'audio' ? 'audio' : 'image', onChange)
 
   if (field.type === 'checkbox') {
     return (
@@ -467,7 +470,8 @@ function CellContent({
           className={cn(
             'flex h-full w-full cursor-default overflow-hidden px-2 text-left',
             wrap ? 'flex-wrap content-start items-start gap-1 py-1.5' : 'items-center',
-            selected && !editing && 'ring-2 ring-inset ring-ring'
+            selected && !editing && 'ring-2 ring-inset ring-ring',
+            isFileField && fileDrop.isOver && 'bg-accent ring-2 ring-inset ring-primary'
           )}
           onClick={onSelect}
           onDoubleClick={() => setEditing(true)}
@@ -477,6 +481,13 @@ function CellContent({
               onSelect()
             }
           }}
+          {...(isFileField
+            ? {
+                onDragOver: fileDrop.onDragOver,
+                onDragLeave: fileDrop.onDragLeave,
+                onDrop: fileDrop.onDrop
+              }
+            : undefined)}
         >
           <ValueDisplay field={field} value={value} lineClamp={lineClamp} />
         </div>

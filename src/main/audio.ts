@@ -7,6 +7,14 @@ import { getDataDir } from './config'
 
 export const audioDir = (): string => join(getDataDir(), 'audio')
 
+async function copyIntoAudio(source: string): Promise<string> {
+  await fs.mkdir(audioDir(), { recursive: true })
+  const ext = extname(source).toLowerCase() || '.mp3'
+  const name = `${randomUUID()}${ext}`
+  await fs.copyFile(source, join(audioDir(), name))
+  return `app-audio:///${name}`
+}
+
 export async function pickAudio(win: BrowserWindow | null): Promise<string | null> {
   const options = {
     properties: ['openFile' as const],
@@ -15,12 +23,16 @@ export async function pickAudio(win: BrowserWindow | null): Promise<string | nul
   const result = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
   const source = result.filePaths[0]
   if (result.canceled || !source) return null
+  return copyIntoAudio(source)
+}
 
-  await fs.mkdir(audioDir(), { recursive: true })
-  const ext = extname(source).toLowerCase() || '.mp3'
-  const name = `${randomUUID()}${ext}`
-  await fs.copyFile(source, join(audioDir(), name))
-  return `app-audio:///${name}`
+/** Imports a file already on disk (e.g. dropped from the OS file manager). */
+export async function importAudio(path: string): Promise<string | null> {
+  try {
+    return await copyIntoAudio(path)
+  } catch {
+    return null
+  }
 }
 
 // Serves userData/audio/<name> as app-audio:///<name> so the renderer can
