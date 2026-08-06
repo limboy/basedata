@@ -9,6 +9,8 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app-image', privileges: { secure: true, supportFetchAPI: true, stream: true } }
 ])
 
+const iconPath = join(__dirname, '../../build/icon.png')
+
 function createWindow(): void {
   const win = new BrowserWindow({
     width: 1320,
@@ -18,6 +20,7 @@ function createWindow(): void {
     show: false,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : undefined,
     trafficLightPosition: { x: 16, y: 16 },
+    icon: iconPath,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -39,6 +42,9 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+  if (process.platform === 'darwin' && !app.isPackaged) {
+    app.dock?.setIcon(iconPath)
+  }
   registerImageProtocol()
   registerIpc()
   await seedIfEmpty()

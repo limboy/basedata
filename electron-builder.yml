@@ -1,0 +1,38 @@
+appId: me.limboy.basedata
+productName: BaseData
+directories:
+  buildResources: build
+  output: release
+files:
+  - out/**/*
+  - package.json
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!cli/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{tsconfig.json,tsconfig.*.json,components.json}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+asar: true
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.productivity
+  icon: build/icon.icns
+dmg:
+  artifactName: ${name}-${version}.${ext}
+win:
+  target:
+    - nsis
+  icon: build/icon.ico
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  createDesktopShortcut: always
+linux:
+  target:
+    - AppImage
+  category: Utility
+  icon: build/icon.png
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
