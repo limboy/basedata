@@ -4,6 +4,7 @@ import { registerIpc } from './ipc'
 import { registerImageProtocol } from './images'
 import { seedIfEmpty } from './seed'
 import { watchProjects } from './watcher'
+import { initAutoUpdater } from './updater'
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app-image', privileges: { secure: true, supportFetchAPI: true, stream: true } }
@@ -50,6 +51,7 @@ app.whenReady().then(async () => {
   await seedIfEmpty()
   watchProjects()
   createWindow()
+  initAutoUpdater()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

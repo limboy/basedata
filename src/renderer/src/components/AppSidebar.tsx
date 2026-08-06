@@ -42,6 +42,7 @@ import {
 import { useCreateProject, useDeleteProject, useProjects } from '@/lib/queries'
 import { isMac } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { UpdateButton } from '@/components/UpdateButton'
 
 export function AppSidebar(): React.JSX.Element {
   const navigate = useNavigate()
@@ -87,6 +88,8 @@ export function AppSidebar(): React.JSX.Element {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+
+      <UpdateButton />
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-sm">

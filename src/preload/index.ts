@@ -14,6 +14,15 @@ const api: Api = {
     return () => {
       ipcRenderer.removeListener('projects:changed', listener)
     }
+  },
+  getUpdateStatus: () => ipcRenderer.invoke('updater:status'),
+  installUpdate: () => ipcRenderer.invoke('updater:install'),
+  onUpdateReady: (callback: (version: string) => void) => {
+    const listener = (_e: unknown, version: string): void => callback(version)
+    ipcRenderer.on('updater:ready', listener)
+    return () => {
+      ipcRenderer.removeListener('updater:ready', listener)
+    }
   }
 }
 

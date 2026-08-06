@@ -119,4 +119,10 @@ export interface Api {
   pickImage: () => Promise<string | null>
   /** Fires when project files change on disk outside the app; returns unsubscribe. */
   onProjectsChanged: (callback: () => void) => () => void
+  /** Version of an already-downloaded update ready to install, if any. */
+  getUpdateStatus: () => Promise<string | null>
+  /** Installs a downloaded update and restarts the app. */
+  installUpdate: () => Promise<void>
+  /** Fires once an update has finished downloading in the background; returns unsubscribe. */
+  onUpdateReady: (callback: (version: string) => void) => () => void
 }
