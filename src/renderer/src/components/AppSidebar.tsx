@@ -39,7 +39,8 @@ import {
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
+  SidebarRail
 } from '@/components/ui/sidebar'
 import { useCreateProject, useDeleteProject, useProjects } from '@/lib/queries'
 import { isMac } from '@/lib/format'
@@ -105,6 +106,8 @@ export function AppSidebar(): React.JSX.Element {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+
+      <SidebarRail />
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
 

@@ -283,7 +283,7 @@ export function TableView({
                       role="separator"
                       aria-orientation="vertical"
                       onMouseDown={startResize(field.id)}
-                      className="group absolute inset-y-0 right-0 z-10 w-2 -mr-1 cursor-col-resize touch-none select-none"
+                      className="group absolute inset-y-0 right-0 w-2 -mr-1 cursor-col-resize touch-none select-none"
                     >
                       <div className="mx-auto h-full w-0.5 bg-transparent group-hover:bg-ring/50 group-active:bg-ring" />
                     </div>
