@@ -4,20 +4,25 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { fieldTypeInfo } from '@/lib/fields'
+import { cn } from '@/lib/utils'
 import { ToolbarButton } from './ToolbarButton'
 
 export function FieldsPopover({
   fields,
   hiddenFieldIds,
-  onChange
+  onChange,
+  lockedFieldId
 }: {
   fields: Field[]
   hiddenFieldIds: string[]
   onChange: (hiddenFieldIds: string[]) => void
+  /** Field that is always shown (e.g. a card's title field) and can't be hidden. */
+  lockedFieldId?: string
 }): React.JSX.Element {
   const hiddenCount = hiddenFieldIds.filter((id) => fields.some((f) => f.id === id)).length
 
   const toggle = (fieldId: string, visible: boolean): void => {
+    if (fieldId === lockedFieldId) return
     onChange(
       visible ? hiddenFieldIds.filter((id) => id !== fieldId) : [...hiddenFieldIds, fieldId]
     )
@@ -39,15 +44,24 @@ export function FieldsPopover({
         <div className="flex flex-col">
           {fields.map((field) => {
             const info = fieldTypeInfo(field.type)
-            const visible = !hiddenFieldIds.includes(field.id)
+            const locked = field.id === lockedFieldId
+            const visible = locked || !hiddenFieldIds.includes(field.id)
             return (
               <label
                 key={field.id}
-                className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+                className={cn(
+                  'flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
+                  locked ? 'text-muted-foreground' : 'hover:bg-accent'
+                )}
               >
                 <Checkbox
                   checked={visible}
+                  disabled={locked}
                   onCheckedChange={(checked) => toggle(field.id, checked === true)}
+                  className={cn(
+                    locked &&
+                      'disabled:opacity-100 data-checked:border-muted-foreground/40 data-checked:bg-muted-foreground/40 data-checked:text-background'
+                  )}
                 />
                 <info.icon className="size-3.5 text-muted-foreground" />
                 <span className="truncate">{field.name}</span>
@@ -69,7 +83,7 @@ export function FieldsPopover({
               variant="ghost"
               size="sm"
               className="h-7 flex-1 text-xs text-muted-foreground"
-              onClick={() => onChange(fields.slice(1).map((f) => f.id))}
+              onClick={() => onChange(fields.filter((f) => f.id !== lockedFieldId).map((f) => f.id))}
             >
               Hide all
             </Button>

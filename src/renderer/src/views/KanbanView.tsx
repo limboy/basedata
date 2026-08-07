@@ -199,6 +199,7 @@ function Toolbar({
         fields={project.fields}
         hiddenFieldIds={config.hiddenFieldIds}
         onChange={(hiddenFieldIds) => patchConfig({ hiddenFieldIds })}
+        lockedFieldId={project.fields[0]?.id}
       />
     </div>
   )
