@@ -1,11 +1,11 @@
 ---
 name: release
-description: Cuts a new BaseData desktop release — bumps the version, tags it, pushes, and lets GitHub Actions build the macOS (Apple Silicon) package with electron-builder and publish it live as a public GitHub Release. Use this whenever the user wants to "release", "ship", "cut a version", "publish a build", "make a new build available", or asks about the release/CI pipeline, auto-update, or electron-builder publishing for this repo — even if they just say "let's release" or name a version number.
+description: Cuts a new Crow desktop release — bumps the version, tags it, pushes, and lets GitHub Actions build the macOS (Apple Silicon) package with electron-builder and publish it live as a public GitHub Release. Use this whenever the user wants to "release", "ship", "cut a version", "publish a build", "make a new build available", or asks about the release/CI pipeline, auto-update, or electron-builder publishing for this repo — even if they just say "let's release" or name a version number.
 ---
 
-# BaseData release
+# Crow release
 
-BaseData ships as an unsigned Electron app built by `electron-builder`. Releases are
+Crow ships as an unsigned Electron app built by `electron-builder`. Releases are
 cut by pushing a `vX.Y.Z` git tag; `.github/workflows/release.yml` then does the actual
 build on a macOS Apple-Silicon GitHub runner and publishes the artifacts. Local
 machines never need to run `electron-builder` themselves for a real release — that

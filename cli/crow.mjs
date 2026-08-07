@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * basedata CLI — lets scripts and AI agents read and write Basedata projects.
+ * crow CLI — lets scripts and AI agents read and write Crow projects.
  *
  * It operates directly on the same JSON files the desktop app uses
  * (userData/projects/<project-id>/data.json, with that project's images/audio
  * alongside it). The app watches the projects directory, so changes made here
  * show up live in an open window. All output is JSON on stdout; errors are
- * JSON on stderr with a non-zero exit code. Run `basedata help` for the full
+ * JSON on stderr with a non-zero exit code. Run `crow help` for the full
  * command reference.
  */
 import { promises as fs, existsSync, readFileSync } from 'fs'
@@ -24,7 +24,7 @@ const uuid = () => randomUUID()
 const now = () => new Date().toISOString()
 
 // ---------------------------------------------------------------------------
-// Data directory (must match Electron's app.getPath('userData') for "basedata")
+// Data directory (must match Electron's app.getPath('userData') for "crow")
 // ---------------------------------------------------------------------------
 
 // Electron's userData path — fixed regardless of where the user points the
@@ -34,11 +34,11 @@ function platformDefaultDir() {
   const home = homedir()
   switch (process.platform) {
     case 'darwin':
-      return join(home, 'Library', 'Application Support', 'basedata')
+      return join(home, 'Library', 'Application Support', 'crow')
     case 'win32':
-      return join(process.env.APPDATA ?? join(home, 'AppData', 'Roaming'), 'basedata')
+      return join(process.env.APPDATA ?? join(home, 'AppData', 'Roaming'), 'crow')
     default:
-      return join(process.env.XDG_CONFIG_HOME ?? join(home, '.config'), 'basedata')
+      return join(process.env.XDG_CONFIG_HOME ?? join(home, '.config'), 'crow')
   }
 }
 
@@ -57,7 +57,7 @@ function configuredDataDir() {
 }
 
 function dataDir() {
-  if (process.env.BASEDATA_DIR) return process.env.BASEDATA_DIR
+  if (process.env.CROW_DIR) return process.env.CROW_DIR
   return configuredDataDir() ?? platformDefaultDir()
 }
 
@@ -357,10 +357,10 @@ function parseJsonArg(raw, what) {
   }
 }
 
-const HELP = `basedata — CLI for the Basedata desktop app, built for scripts and AI agents.
+const HELP = `crow — CLI for the Crow desktop app, built for scripts and AI agents.
 
 Data lives in ${dataDir()} (follows the app's configured data location;
-override with BASEDATA_DIR or --data-dir).
+override with CROW_DIR or --data-dir).
 Changes appear live in the app if it is open. All output is JSON.
 Projects are referenced by name or id; records by id (unique prefixes work).
 
@@ -403,11 +403,11 @@ VALUE FORMATS (per field type, when writing)
   null          clears the field (any type)
 
 EXAMPLES
-  basedata list-projects
-  basedata schema "My Tasks"
-  basedata add-record "My Tasks" '{"Name":"Buy milk","Status":"Todo","Due":"2026-08-10"}'
-  basedata list-records "My Tasks" --where '{"Status":"Todo"}' --limit 20
-  basedata update-record "My Tasks" 3f2a '{"Status":"Done"}'
+  crow list-projects
+  crow schema "My Tasks"
+  crow add-record "My Tasks" '{"Name":"Buy milk","Status":"Todo","Due":"2026-08-10"}'
+  crow list-records "My Tasks" --where '{"Status":"Todo"}' --limit 20
+  crow update-record "My Tasks" 3f2a '{"Status":"Done"}'
 `
 
 // ---------------------------------------------------------------------------
@@ -568,14 +568,14 @@ const commands = {
 
 async function main() {
   const { positional, flags } = parseArgs(process.argv.slice(2))
-  if (typeof flags['data-dir'] === 'string') process.env.BASEDATA_DIR = flags['data-dir']
+  if (typeof flags['data-dir'] === 'string') process.env.CROW_DIR = flags['data-dir']
   const name = positional.shift()
   if (!name || name === 'help' || flags.help === true) {
     process.stdout.write(HELP)
     return
   }
   const command = commands[name]
-  if (!command) fail(`Unknown command "${name}". Run \`basedata help\` for the command list.`)
+  if (!command) fail(`Unknown command "${name}". Run \`crow help\` for the command list.`)
   await command({ positional, flags })
 }
 

@@ -1,4 +1,4 @@
-# BaseData
+# Crow
 
 A lite Airtable-style desktop app built with Electron. Create multiple projects, each with its own fields, records, and views.
 
@@ -26,8 +26,8 @@ npm run build
 
 ## Agent CLI
 
-`cli/basedata.mjs` is a zero-dependency CLI that lets scripts and AI agents read and write projects — see [cli/README.md](cli/README.md). It edits the same JSON files the app uses, and the app picks up external changes live via a file watcher. Run `node cli/basedata.mjs help` for the full agent-oriented reference, or `npm link` to get a global `basedata` command.
+`cli/crow.mjs` is a zero-dependency CLI that lets scripts and AI agents read and write projects — see [cli/README.md](cli/README.md). It edits the same JSON files the app uses, and the app picks up external changes live via a file watcher. Run `node cli/crow.mjs help` for the full agent-oriented reference, or `npm link` to get a global `crow` command.
 
 ## Data
 
-Projects are stored as JSON files in Electron's `userData` directory (`~/Library/Application Support/basedata/projects/` on macOS). Locally picked images are copied to `userData/images/` and served through a custom `app-image://` protocol. A demo project is seeded on first launch.
+Projects are stored as JSON files in Electron's `userData` directory (`~/Library/Application Support/crow/projects/` on macOS). Locally picked images are copied to `userData/images/` and served through a custom `app-image://` protocol. A demo project is seeded on first launch.

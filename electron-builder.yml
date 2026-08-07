@@ -1,5 +1,5 @@
-appId: me.limboy.basedata
-productName: BaseData
+appId: me.limboy.crow
+productName: Crow
 directories:
   buildResources: build
   output: release
@@ -18,6 +18,8 @@ asar: true
 publish:
   provider: github
   owner: limboy
+  # Still `basedata` — the app was renamed to Crow but the GitHub repo wasn't,
+  # and this has to match the repo that actually hosts the releases.
   repo: basedata
   # Release publishes immediately when CI succeeds — no manual "Publish release"
   # click. A passing build (incl. signing/notarization) goes live automatically.
