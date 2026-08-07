@@ -29,6 +29,7 @@ import { isMac } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { UpdateButton } from '@/components/UpdateButton'
 import { SettingsDialog } from '@/components/SettingsDialog'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 export function AppSidebar(): React.JSX.Element {
   const navigate = useNavigate()
@@ -80,11 +81,15 @@ export function AppSidebar(): React.JSX.Element {
 
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton className="cursor-default" onClick={() => setSettingsOpen(true)}>
+          <SidebarMenuItem className="flex items-center gap-1">
+            <SidebarMenuButton
+              className="w-auto flex-1 cursor-default"
+              onClick={() => setSettingsOpen(true)}
+            >
               <Settings />
               <span>Settings</span>
             </SidebarMenuButton>
+            <ThemeToggle />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
