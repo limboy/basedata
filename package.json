@@ -10,7 +10,7 @@
   "author": "limboy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/limboy/basedata.git"
+    "url": "https://github.com/limboy/crow.git"
   },
   "scripts": {
     "dev": "electron-vite dev",

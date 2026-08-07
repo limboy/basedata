@@ -18,9 +18,7 @@ asar: true
 publish:
   provider: github
   owner: limboy
-  # Still `basedata` — the app was renamed to Crow but the GitHub repo wasn't,
-  # and this has to match the repo that actually hosts the releases.
-  repo: basedata
+  repo: crow
   # Release publishes immediately when CI succeeds — no manual "Publish release"
   # click. A passing build (incl. signing/notarization) goes live automatically.
   releaseType: release
