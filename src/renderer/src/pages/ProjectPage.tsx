@@ -31,6 +31,7 @@ import { TableView } from '@/views/TableView'
 import { KanbanView } from '@/views/KanbanView'
 import { GalleryView } from '@/views/GalleryView'
 import * as ops from '@/lib/ops'
+import { applyFilters } from '@/lib/derive'
 import { useProject, useProjects, useUpdateProject, type ProjectUpdater } from '@/lib/queries'
 import { cn } from '@/lib/utils'
 
@@ -80,12 +81,21 @@ export default function ProjectPage(): React.JSX.Element {
 
   const activeView = project.views.find((v) => v.id === activeViewId) ?? project.views[0]
 
+  // Only the table view currently supports filters, so that's the only view
+  // whose record count can differ from the project total.
+  const displayedRecords =
+    activeView?.type === 'table'
+      ? applyFilters(project.records, activeView.config.filters, project.fields)
+      : project.records
+  const filtered = displayedRecords.length !== project.records.length
+
   return (
     <div className="flex h-full flex-col">
       <PageHeader>
         <span className="text-sm font-semibold tracking-tight">{project.name}</span>
         <span className="ml-auto mr-2 text-xs text-muted-foreground">
-          {project.records.length} record{project.records.length === 1 ? '' : 's'}
+          {displayedRecords.length} record{displayedRecords.length === 1 ? '' : 's'}
+          {filtered ? ` of ${project.records.length}` : ''}
         </span>
       </PageHeader>
 
