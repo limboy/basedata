@@ -9,7 +9,7 @@
  * JSON on stderr with a non-zero exit code. Run `basedata help` for the full
  * command reference.
  */
-import { promises as fs, existsSync } from 'fs'
+import { promises as fs, existsSync, readFileSync } from 'fs'
 import { join, extname } from 'path'
 import { homedir } from 'os'
 import { randomUUID } from 'crypto'
@@ -27,8 +27,10 @@ const now = () => new Date().toISOString()
 // Data directory (must match Electron's app.getPath('userData') for "basedata")
 // ---------------------------------------------------------------------------
 
-function dataDir() {
-  if (process.env.BASEDATA_DIR) return process.env.BASEDATA_DIR
+// Electron's userData path — fixed regardless of where the user points the
+// app's data at. This is also where the app's config.json (which records
+// that choice) always lives, so it doubles as the anchor for finding it.
+function platformDefaultDir() {
   const home = homedir()
   switch (process.platform) {
     case 'darwin':
@@ -38,6 +40,25 @@ function dataDir() {
     default:
       return join(process.env.XDG_CONFIG_HOME ?? join(home, '.config'), 'basedata')
   }
+}
+
+// Mirrors src/main/config.ts: the app lets the user relocate its data
+// directory (e.g. into Dropbox), recording the choice in a config.json that
+// always lives at the platform-default path. Follow the same rule here so
+// the CLI reads/writes wherever the app actually is right now.
+function configuredDataDir() {
+  try {
+    const config = JSON.parse(readFileSync(join(platformDefaultDir(), 'config.json'), 'utf-8'))
+    if (config.dataDir && existsSync(config.dataDir)) return config.dataDir
+  } catch {
+    // no config.json, or it's unreadable/malformed — fall through to default
+  }
+  return null
+}
+
+function dataDir() {
+  if (process.env.BASEDATA_DIR) return process.env.BASEDATA_DIR
+  return configuredDataDir() ?? platformDefaultDir()
 }
 
 const projectsRootDir = () => join(dataDir(), 'projects')
@@ -338,7 +359,8 @@ function parseJsonArg(raw, what) {
 
 const HELP = `basedata — CLI for the Basedata desktop app, built for scripts and AI agents.
 
-Data lives in ${dataDir()} (override with BASEDATA_DIR or --data-dir).
+Data lives in ${dataDir()} (follows the app's configured data location;
+override with BASEDATA_DIR or --data-dir).
 Changes appear live in the app if it is open. All output is JSON.
 Projects are referenced by name or id; records by id (unique prefixes work).
 
