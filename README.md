@@ -1,5 +1,7 @@
 # Crow
 
+![](assets/screenshot.webp)
+
 A lite Airtable-style desktop app built with Electron. Create multiple projects, each with its own fields, records, and views.
 
 - **Table view** — show/hide fields, filter rules, multi-sort, group by field, inline cell editing
