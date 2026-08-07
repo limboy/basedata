@@ -9,6 +9,10 @@ A lite Airtable-style desktop app built with Electron. Create multiple projects,
 - **Gallery view** — pick any image field as the card cover
 - **Field types** — text, number, single select, multi select, date, checkbox, URL, image (local file or URL)
 
+## Download
+
+Download the latest macOS (Apple Silicon) build from the [Releases page](https://github.com/limboy/crow/releases/latest).
+
 ## Stack
 
 Electron (electron-vite) · React · TypeScript · Vite · Tailwind CSS v4 · shadcn/ui · TanStack Query · dnd-kit
