@@ -1,6 +1,6 @@
 # Crow
 
-![](assets/screenshot.webp)
+![](screenshot.webp)
 
 A lite Airtable-style desktop app built with Electron. Create multiple projects, each with its own fields, records, and views.
 
