@@ -13,6 +13,12 @@ files:
   - '!{tsconfig.json,tsconfig.*.json,components.json}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
 asar: true
+# The standalone CLI ships as a real file outside the asar archive (not via
+# `files`) so "Install 'crow' Command in PATH" (src/main/cli.ts) can point a
+# plain shell wrapper straight at it — no unpacking or asar-aware fs needed.
+extraResources:
+  - from: cli/crow.mjs
+    to: cli/crow.mjs
 # GitHub is the update feed for electron-updater (added later): each publish
 # uploads latest-mac.yml alongside the zip, which is what autoUpdater polls.
 publish:

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, protocol, shell } from 'electron'
+import { app, BrowserWindow, Menu, protocol, shell } from 'electron'
 import { join } from 'path'
 import { registerIpc } from './ipc'
 import { registerImageProtocol } from './images'
@@ -6,6 +6,7 @@ import { registerAudioProtocol } from './audio'
 import { seedIfEmpty } from './seed'
 import { watchProjects } from './watcher'
 import { initAutoUpdater } from './updater'
+import { buildAppMenu } from './menu'
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app-image', privileges: { secure: true, supportFetchAPI: true, stream: true } },
@@ -45,6 +46,11 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+  // Adds "Install 'crow' Command in PATH" to Electron's default mac menu;
+  // other platforms keep the built-in default (CLI install isn't wired up
+  // there yet — see src/main/cli.ts).
+  if (process.platform === 'darwin') Menu.setApplicationMenu(buildAppMenu())
+
   registerImageProtocol()
   registerAudioProtocol()
   registerIpc()
